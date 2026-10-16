@@ -1,0 +1,32 @@
+<!--
+    Pruebas de integración: ClipRepository y DatabaseInitializer contra SQLite REAL.
+    Cada prueba usa su propio archivo temporal (se borra al terminar): no se toca la
+    base de datos del usuario (%LOCALAPPDATA%\ClipVault\clipvault.db).
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <!-- Infrastructure es un proyecto WPF (monitor y hotkeys): se necesita el mismo runtime de escritorio. -->
+    <UseWPF>true</UseWPF>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ClipVault.Core\ClipVault.Core.csproj" />
+    <ProjectReference Include="..\..\src\ClipVault.Infrastructure\ClipVault.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>
