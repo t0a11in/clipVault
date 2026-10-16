@@ -1,0 +1,440 @@
+{
+  "artifact": "ClipVault Library UI screen specification",
+  "version": "1.0",
+  "language": "es-CL",
+  "platform": {
+    "type": "Windows desktop",
+    "framework": "WPF",
+    "mustRemainNative": true,
+    "reference": "Navegación lateral vertical inspirada en OneNote; no copiar su marca ni convertir la aplicación a web."
+  },
+  "purpose": "Maqueta de la Biblioteca de mensajes, comandos, prompts y fragmentos reutilizables de ClipVault.",
+  "globalDesignTokens": {
+    "window": {
+      "width": 1280,
+      "height": 760,
+      "minWidth": 980,
+      "minHeight": 620,
+      "background": "#FFFFFF"
+    },
+    "topBar": {
+      "height": 48,
+      "background": "#F3F4F6",
+      "borderBottom": "#E5E7EB"
+    },
+    "leftNavigation": {
+      "width": 226,
+      "background": "#F8FAFC",
+      "borderRight": "#E2E8F0"
+    },
+    "pageList": {
+      "width": 210,
+      "background": "#FFFFFF",
+      "borderRight": "#E2E8F0"
+    },
+    "content": {
+      "background": "#FFFFFF",
+      "maxReadableWidth": 760
+    },
+    "typography": {
+      "fontFamily": "Segoe UI",
+      "titleSize": 28,
+      "sectionTitleSize": 18,
+      "bodySize": 14,
+      "smallSize": 12
+    },
+    "colors": {
+      "primary": "#2563EB",
+      "success": "#15803D",
+      "warning": "#D97706",
+      "danger": "#DC2626",
+      "dangerDark": "#991B1B",
+      "neutral": "#475569",
+      "selected": "#E5E7EB",
+      "focus": "#DDD6FE",
+      "text": "#111827",
+      "mutedText": "#64748B",
+      "sensitive": "#7C3AED"
+    },
+    "spacing": {
+      "xs": 4,
+      "sm": 8,
+      "md": 12,
+      "lg": 16,
+      "xl": 24
+    },
+    "buttonStyle": {
+      "cornerRadius": 4,
+      "height": 32,
+      "useIconAndTooltip": true,
+      "useSemanticColors": true
+    }
+  },
+  "navigation": {
+    "primaryAreas": [
+      {
+        "id": "history",
+        "label": "Historial",
+        "icon": "🕘",
+        "behavior": "Abre la vista actual de ClipVault sin cambiar sus funciones existentes."
+      },
+      {
+        "id": "library",
+        "label": "Biblioteca",
+        "icon": "📚",
+        "behavior": "Abre las pantallas definidas en este documento."
+      }
+    ],
+    "keyboardShortcuts": [
+      {
+        "keys": "Ctrl+N",
+        "action": "Nueva página simulada"
+      },
+      {
+        "keys": "Ctrl+Shift+N",
+        "action": "Nueva sección simulada"
+      },
+      {
+        "keys": "Escape",
+        "action": "Cerrar modal abierto o volver al Historial desde Biblioteca"
+      },
+      {
+        "keys": "Enter",
+        "action": "Confirmar la creación de una sección, página, categoría o campo cuando el control de entrada tenga foco"
+      }
+    ]
+  },
+  "mockData": {
+    "sections": [
+      { "id": "users", "name": "Usuarios", "color": "#0EA5E9", "shortcut": "U", "pageCount": 0 },
+      { "id": "python", "name": "Python", "color": "#DB2777", "shortcut": "P", "pageCount": 0 },
+      { "id": "tips", "name": "Tips", "color": "#F59E0B", "shortcut": "T", "pageCount": 0 },
+      { "id": "prompts", "name": "Prompts utilizados", "color": "#BE185D", "shortcut": "R", "pageCount": 0 },
+      { "id": "matter", "name": "Materia prima", "color": "#C4A484", "shortcut": "M", "pageCount": 0 },
+      { "id": "lambda", "name": "Lambda", "color": "#65A30D", "shortcut": "L", "pageCount": 0 },
+      { "id": "quick-notes", "name": "Notas rápidas", "color": "#075985", "shortcut": "N", "pageCount": 0 },
+      { "id": "year-2026", "name": "2026", "color": "#C026D3", "shortcut": "2", "pageCount": 4, "isSelected": true }
+    ],
+    "pages": [
+      { "id": "dockerfile", "sectionId": "year-2026", "title": "Dockerfile", "modifiedAt": "2026-10-16T11:30:00", "containsCommand": true, "isSensitive": false },
+      { "id": "angular", "sectionId": "year-2026", "title": "Angular", "modifiedAt": "2026-10-16T12:10:00", "containsCommand": true, "isSensitive": false },
+      { "id": "cmd", "sectionId": "year-2026", "title": "CMD", "modifiedAt": "2026-10-16T12:35:00", "containsCommand": true, "isSensitive": false },
+      { "id": "ia-clonar", "sectionId": "year-2026", "title": "IA Clonar", "modifiedAt": "2026-10-16T13:10:00", "containsCommand": true, "isSensitive": false, "isSelected": true }
+    ],
+    "pageFields": [
+      {
+        "key": "description",
+        "label": "Descripción",
+        "type": "MultilineText",
+        "value": "Llevar árbol del proyecto de una IA a otra.",
+        "isRequired": true,
+        "isSensitive": false
+      },
+      {
+        "key": "command",
+        "label": "Comando",
+        "type": "Code",
+        "value": "repopack \"$archivo\"",
+        "isRequired": true,
+        "isSensitive": false,
+        "isCommandTemplate": true
+      },
+      {
+        "key": "example",
+        "label": "Ejemplo",
+        "type": "FilePath",
+        "value": "repopack \"D:\\2026\\proyectos\\SnapGasto\\\"",
+        "isRequired": false,
+        "isSensitive": false,
+        "isCopySource": true
+      }
+    ]
+  },
+  "screens": [
+    {
+      "id": "library-main",
+      "name": "Biblioteca - navegación principal",
+      "route": "library",
+      "goal": "Permitir acceder rápidamente a secciones, páginas y contenido reutilizable.",
+      "layout": {
+        "type": "grid",
+        "rows": [48, "*"],
+        "columns": [226, 210, "*"]
+      },
+      "regions": [
+        {
+          "id": "top-command-bar",
+          "grid": { "row": 0, "column": 0, "columnSpan": 3 },
+          "type": "commandBar",
+          "background": "#F3F4F6",
+          "items": [
+            { "type": "button", "icon": "←", "label": "Volver", "tooltip": "Volver al Historial", "command": "ReturnToHistoryCommand", "style": "neutral" },
+            { "type": "separator" },
+            { "type": "button", "icon": "＋", "label": "Nueva página", "tooltip": "Agregar página", "command": "CreatePageCommand", "style": "primary" },
+            { "type": "button", "icon": "＋", "label": "Nueva sección", "tooltip": "Agregar sección", "command": "CreateSectionCommand", "style": "neutral" },
+            { "type": "button", "icon": "🔎", "label": "Buscar", "tooltip": "Buscar páginas y comandos", "command": "ToggleLibrarySearchCommand", "style": "neutral" },
+            { "type": "button", "icon": "⚙", "label": "Copia y pegado", "tooltip": "Configurar copia, pegado y datos sensibles", "command": "OpenCopyPasteSettingsCommand", "style": "neutral", "align": "right" }
+          ]
+        },
+        {
+          "id": "vertical-sections",
+          "grid": { "row": 1, "column": 0 },
+          "type": "verticalTabs",
+          "header": {
+            "icon": "📚",
+            "label": "Mi biblioteca",
+            "collapsible": true
+          },
+          "itemTemplate": {
+            "height": 32,
+            "leadingColorBar": 5,
+            "showName": true,
+            "showShortcut": true,
+            "selectedBackground": "#E5E7EB",
+            "selectedFontWeight": "SemiBold"
+          },
+          "itemsSource": "mockData.sections",
+          "footer": {
+            "icon": "＋",
+            "label": "Nueva sección",
+            "command": "CreateSectionCommand"
+          }
+        },
+        {
+          "id": "page-list",
+          "grid": { "row": 1, "column": 1 },
+          "type": "pageList",
+          "header": {
+            "button": {
+              "icon": "＋",
+              "label": "Agregar página",
+              "command": "CreatePageCommand"
+            },
+            "sortButton": {
+              "icon": "⇅",
+              "tooltip": "Ordenar páginas"
+            }
+          },
+          "itemTemplate": {
+            "height": 40,
+            "showTitle": true,
+            "showModifiedAt": false,
+            "showCommandIndicator": true,
+            "showSensitiveIndicator": true,
+            "selectedBackground": "#E5E7EB",
+            "selectedFontWeight": "SemiBold"
+          },
+          "itemsSource": "mockData.pages"
+        },
+        {
+          "id": "page-editor",
+          "grid": { "row": 1, "column": 2 },
+          "type": "pageEditor",
+          "padding": 32,
+          "maxContentWidth": 760,
+          "header": {
+            "title": "IA Clonar",
+            "titleEditable": true,
+            "metadata": "jueves, 16 de octubre de 2026    13:10",
+            "actions": [
+              { "icon": "✎", "tooltip": "Editar página", "command": "EditPageCommand" },
+              { "icon": "📋", "tooltip": "Copiar contenido de la página", "command": "CopyPageCommand" },
+              { "icon": "💾", "tooltip": "Guardar maqueta", "command": "SavePageCommand" }
+            ]
+          },
+          "fields": [
+            {
+              "label": "Descripción",
+              "type": "multilineText",
+              "valueBinding": "SelectedPage.Description",
+              "readOnly": false
+            },
+            {
+              "label": "Comando",
+              "type": "code",
+              "valueBinding": "SelectedPage.CommandTemplate",
+              "readOnly": false,
+              "copyButton": {
+                "icon": "📋",
+                "tooltip": "Copiar plantilla"
+              }
+            },
+            {
+              "label": "Ejemplo",
+              "type": "text",
+              "valueBinding": "SelectedPage.Example",
+              "readOnly": false
+            }
+          ],
+          "footerActions": [
+            { "icon": "＋", "label": "Agregar campo", "command": "AddDynamicFieldCommand", "style": "neutral" },
+            { "icon": "▶", "label": "Probar plantilla", "command": "OpenTemplatePreviewCommand", "style": "primary" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template-preview",
+      "name": "Vista previa de comando rápido",
+      "type": "modal",
+      "goal": "Mostrar cómo se reemplaza $archivo antes de copiar, sin ejecutar comandos.",
+      "size": { "width": 620, "height": "auto" },
+      "overlay": { "background": "#66000000", "closeOnOutsideClick": true, "closeOnEscape": true },
+      "content": {
+        "title": "Repopack",
+        "subtitle": "Generar comando desde plantilla",
+        "fields": [
+          {
+            "label": "Plantilla guardada",
+            "type": "codeReadOnly",
+            "value": "repopack \"$archivo\""
+          },
+          {
+            "label": "Archivo o ruta",
+            "type": "textInput",
+            "value": "D:\\2026\\proyectos\\SnapGasto\\",
+            "placeholder": "Pega o escribe una ruta",
+            "canUseClipboard": true
+          },
+          {
+            "label": "Resultado",
+            "type": "codeReadOnly",
+            "value": "repopack \"D:\\2026\\proyectos\\SnapGasto\\\"",
+            "highlight": "#EFF6FF"
+          }
+        ],
+        "actions": [
+          { "icon": "📋", "label": "Copiar resultado", "command": "CopyRenderedTemplateCommand", "style": "success" },
+          { "icon": "×", "label": "Cerrar", "command": "CloseCommand", "style": "neutral" }
+        ],
+        "constraints": [
+          "No ejecutar repopack.",
+          "No abrir terminal.",
+          "Copiar solo después de pulsar Copiar resultado."
+        ]
+      }
+    },
+    {
+      "id": "copy-paste-settings",
+      "name": "Configuración de copia y pegado",
+      "type": "modal",
+      "goal": "Permitir configurar qué se copia, cómo se usa el portapapeles y cómo se tratan los datos sensibles.",
+      "size": { "width": 700, "height": 560 },
+      "overlay": { "background": "#66000000", "closeOnOutsideClick": false, "closeOnEscape": true },
+      "content": {
+        "title": "Configuración de copia y pegado",
+        "sections": [
+          {
+            "title": "Modo de copiado",
+            "control": "radioGroup",
+            "selected": "rendered-command",
+            "options": [
+              { "id": "raw-value", "label": "Copiar valor original" },
+              { "id": "rendered-command", "label": "Copiar comando renderizado" },
+              { "id": "code-block", "label": "Copiar como bloque de código" },
+              { "id": "selected-fields", "label": "Copiar solo campos seleccionados" }
+            ]
+          },
+          {
+            "title": "Modo de pegado",
+            "control": "checkList",
+            "options": [
+              { "id": "paste-active-field", "label": "Pegar en el campo activo", "checked": true },
+              { "id": "clipboard-as-file", "label": "Usar el portapapeles como valor de $archivo", "checked": false },
+              { "id": "confirm-replace", "label": "Confirmar antes de reemplazar un campo", "checked": true },
+              { "id": "no-auto-sensitive", "label": "No capturar automáticamente contenido sensible", "checked": true }
+            ]
+          },
+          {
+            "title": "Variables de plantilla",
+            "control": "table",
+            "columns": ["Variable", "Campo de origen", "Vista previa"],
+            "rows": [
+              ["$archivo", "Ejemplo / campo de ruta", "D:\\2026\\proyectos\\SnapGasto\\"]
+            ]
+          },
+          {
+            "title": "Datos sensibles",
+            "control": "infoPanel",
+            "icon": "🔒",
+            "text": "Los secretos se muestran ocultos y requieren una acción explícita antes de copiarlos."
+          }
+        ],
+        "actions": [
+          { "icon": "💾", "label": "Guardar configuración", "command": "SaveCopyPasteSettingsCommand", "style": "success" },
+          { "icon": "×", "label": "Cancelar", "command": "CloseCommand", "style": "neutral" }
+        ]
+      }
+    },
+    {
+      "id": "sensitive-field",
+      "name": "Campo sensible dentro del editor",
+      "type": "componentState",
+      "goal": "Representar un secreto sin exponerlo ni copiarlo automáticamente.",
+      "component": {
+        "field": {
+          "label": "API Key de ejemplo",
+          "type": "Secret",
+          "displayValue": "••••••••••••••••",
+          "storedExample": "No usar secretos reales en la maqueta",
+          "isSensitive": true,
+          "leadingIcon": "🔒",
+          "accentColor": "#7C3AED",
+          "tooltip": "Dato sensible: contenido oculto"
+        },
+        "actions": [
+          { "icon": "◉", "label": "Mostrar temporalmente", "command": "RevealSensitiveFieldCommand", "requiresExplicitClick": true },
+          { "icon": "📋", "label": "Copiar", "command": "CopySensitiveFieldCommand", "requiresConfirmation": true }
+        ],
+        "rules": [
+          "No registrar el valor en logs.",
+          "No copiar automáticamente.",
+          "No incluir datos sensibles reales en datos de ejemplo.",
+          "Ocultar nuevamente el valor al cerrar la página o después de un tiempo configurable en una etapa futura."
+        ]
+      }
+    },
+    {
+      "id": "dynamic-field-dialog",
+      "name": "Agregar campo al modelo base",
+      "type": "modal",
+      "goal": "Demostrar que una página puede crecer más allá de Descripción, Comando y Ejemplo.",
+      "size": { "width": 520, "height": "auto" },
+      "overlay": { "background": "#66000000", "closeOnOutsideClick": true, "closeOnEscape": true },
+      "content": {
+        "title": "Agregar campo",
+        "fields": [
+          { "label": "Nombre visible", "type": "textInput", "placeholder": "Ejemplo: Etiquetas" },
+          {
+            "label": "Tipo",
+            "type": "select",
+            "options": ["Texto", "Texto multilínea", "Código", "Ruta de archivo", "Dato sensible", "Booleano", "Fecha", "Etiquetas"]
+          },
+          { "label": "Obligatorio", "type": "checkbox", "checked": false },
+          { "label": "Marcar como sensible", "type": "checkbox", "checked": false }
+        ],
+        "actions": [
+          { "icon": "＋", "label": "Agregar en memoria", "command": "ConfirmAddDynamicFieldCommand", "style": "primary" },
+          { "icon": "×", "label": "Cancelar", "command": "CloseCommand", "style": "neutral" }
+        ],
+        "constraints": [
+          "No persistir todavía el campo en SQLite.",
+          "Agregarlo solo a la colección observable de la maqueta.",
+          "Mantener el orden visual de los campos."
+        ]
+      }
+    }
+  ],
+  "acceptanceChecks": [
+    "La interfaz sigue siendo WPF nativa y la vista Historial actual continúa disponible.",
+    "La Biblioteca tiene tres áreas: secciones verticales, lista de páginas y editor.",
+    "La navegación vertical usa color, selección visible y atajos rápidos opcionales.",
+    "La página IA Clonar muestra Descripción, Comando y Ejemplo.",
+    "La plantilla repopack con $archivo presenta una vista previa antes de copiar.",
+    "La maqueta no ejecuta comandos del sistema.",
+    "La configuración de copia y pegado es visible como modal o panel.",
+    "Los datos sensibles se ven ocultos y requieren interacción explícita para copiarse.",
+    "Existe una maqueta para agregar campos dinámicos en memoria.",
+    "No se cambian aún las tablas SQLite existentes ni el monitor de portapapeles."
+  ]
+}
