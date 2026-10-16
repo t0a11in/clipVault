@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:ClipVault.App.Converters"
+        xmlns:components="clr-namespace:ClipVault.App.Components"
         Title="ClipVault"
         Width="980"
         Height="640"
@@ -56,7 +57,29 @@
         </Style>
     </Window.Resources>
 
+    <!-- Cáscara: riel lateral de áreas a la izquierda; a la derecha, Historial (sin cambios) o Biblioteca. -->
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- DataContext = ShellViewModel (se asigna en el code-behind). -->
+        <Border x:Name="ShellRail"
+                Grid.Column="0"
+                Padding="0,8,0,8"
+                Background="{DynamicResource Cv.Brush.TopBar}"
+                BorderBrush="{DynamicResource Cv.Brush.Border}"
+                BorderThickness="{DynamicResource Cv.Border.Right}">
+            <components:AreaSwitcher VerticalAlignment="Top"
+                                     Orientation="Vertical"
+                                     ItemsSource="{Binding Areas}"
+                                     SelectedItem="{Binding SelectedArea, Mode=TwoWay}" />
+        </Border>
+
+        <!-- Historial existente: contenido sin modificaciones, solo se oculta al abrir la Biblioteca. -->
+    <Grid Grid.Column="1"
+          Visibility="{Binding DataContext.IsHistoryActive, ElementName=ShellRail, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Visible}">
         <DockPanel Margin="16">
             <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
                 <Grid.ColumnDefinitions>
@@ -315,5 +338,13 @@
                 </Grid>
             </Border>
         </Grid>
+    </Grid>
+
+        <!-- Biblioteca: la vista se resuelve por DataTemplate (Shell/ShellTemplates.xaml). -->
+        <ContentControl x:Name="LibraryHost"
+                        Grid.Column="1"
+                        Focusable="False"
+                        Content="{Binding Library}"
+                        Visibility="{Binding IsLibraryActive, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}" />
     </Grid>
 </Window>

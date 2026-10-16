@@ -4,6 +4,14 @@
              xmlns:tb="clr-namespace:H.NotifyIcon;assembly=H.NotifyIcon.Wpf"
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
+        <ResourceDictionary>
+            <!-- Biblioteca: tokens, estilos con clave y plantillas de la cáscara.
+                 No contienen estilos implícitos, así que el Historial no cambia. -->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Controls.xaml" />
+                <ResourceDictionary Source="Shell/ShellTemplates.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
         <tb:TaskbarIcon x:Key="TrayIcon"
                         ToolTipText="ClipVault">
             <tb:TaskbarIcon.IconSource>
@@ -30,5 +38,6 @@
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

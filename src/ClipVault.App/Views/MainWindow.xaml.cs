@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using ClipVault.App.Configuration;
 using ClipVault.App.Services;
+using ClipVault.App.Shell;
 using ClipVault.App.ViewModels;
 using ClipVault.Core.Interfaces;
 
@@ -24,7 +25,8 @@ public partial class MainWindow : Window
         IClipboardMonitor clipboardMonitor,
         IHotkeyService hotkeyService,
         IApplicationWindowService windowService,
-        ClipVaultOptions options)
+        ClipVaultOptions options,
+        ShellViewModel shellViewModel)
     {
         InitializeComponent();
 
@@ -35,6 +37,11 @@ public partial class MainWindow : Window
         _options = options;
 
         DataContext = _viewModel;
+
+        // La ventana sigue usando MainViewModel para el Historial; solo el riel de
+        // áreas y la Biblioteca reciben el ViewModel de la cáscara.
+        ShellRail.DataContext = shellViewModel;
+        LibraryHost.DataContext = shellViewModel;
 
         SourceInitialized += OnSourceInitialized;
         ContentRendered += OnContentRendered;

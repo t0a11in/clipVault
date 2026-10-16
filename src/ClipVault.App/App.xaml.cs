@@ -1,7 +1,11 @@
 using System.IO;
 using System.Windows;
 using ClipVault.App.Configuration;
+using ClipVault.App.Features.Library;
+using ClipVault.App.Features.Library.Data;
 using ClipVault.App.Services;
+using ClipVault.App.Shell;
+using ClipVault.App.Themes;
 using ClipVault.App.ViewModels;
 using ClipVault.App.Views;
 using ClipVault.Core.Interfaces;
@@ -35,6 +39,15 @@ public partial class App : Application
             services.AddSingleton<MainViewModel>();
             services.AddTransient<SaveClipDialogViewModel>();
             services.AddTransient<CategoryDialogViewModel>();
+            // Biblioteca y cáscara: singletons para conservar el estado al cambiar de área.
+            // Servicios de la Biblioteca (interfaces para poder simularlos en pruebas).
+            services.AddSingleton<IClipboardService, ClipboardService>();
+            services.AddSingleton<IFileDialogService, FileDialogService>();
+            services.AddSingleton<IConfirmationService, ConfirmationService>();
+            // Maqueta: datos de ejemplo en memoria (se reemplazará por persistencia real).
+            services.AddSingleton<ILibraryDataSource, SampleLibraryDataSource>();
+            services.AddSingleton<LibraryViewModel>();
+            services.AddSingleton<ShellViewModel>();
             services.AddSingleton<MainWindow>();
 
             _serviceProvider = services.BuildServiceProvider();
@@ -43,6 +56,9 @@ public partial class App : Application
                 _serviceProvider.GetRequiredService<DatabaseInitializer>();
 
             await initializer.InitializeAsync();
+
+            // Biblioteca: respeta el alto contraste de Windows (no afecta al Historial).
+            HighContrastTheme.Attach(Resources);
 
             var window = _serviceProvider.GetRequiredService<MainWindow>();
             MainWindow = window;
@@ -79,6 +95,8 @@ public partial class App : Application
 
             (_serviceProvider?.GetService(typeof(IHotkeyService))
                 as IHotkeyService)?.Unregister();
+
+            HighContrastTheme.Detach();
 
             if (Resources["TrayIcon"] is TaskbarIcon trayIcon)
             {

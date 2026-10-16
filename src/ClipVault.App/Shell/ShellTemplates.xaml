@@ -1,0 +1,12 @@
+<!--
+    Plantillas de la cáscara: asocian cada ViewModel de área con su vista
+    (equivalente a las rutas de Angular). El ContentControl de MainWindow
+    muestra la vista que corresponda al ViewModel que reciba.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:library="clr-namespace:ClipVault.App.Features.Library">
+    <DataTemplate DataType="{x:Type library:LibraryViewModel}">
+        <library:LibraryView />
+    </DataTemplate>
+</ResourceDictionary>
