@@ -1,0 +1,345 @@
+<!--
+    Editor de página — Etapas 5 a 8 (lectura, plantilla $archivo, datos sensibles y edición).
+    Composición de componentes: encabezado y acciones fijos arriba (no se ocultan
+    al desplazar), luego la plantilla, los campos dinámicos y los metadatos.
+    DataContext: PageEditorViewModel.
+-->
+<UserControl x:Class="ClipVault.App.Features.Library.Editor.PageEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:editor="clr-namespace:ClipVault.App.Features.Library.Editor"
+             xmlns:components="clr-namespace:ClipVault.App.Components"
+             xmlns:fields="clr-namespace:ClipVault.App.Components.Fields"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=editor:PageEditorViewModel}"
+             d:DesignWidth="800" d:DesignHeight="700"
+             Focusable="False">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <!-- Un DataTemplate por tipo de campo; cada uno usa su componente. -->
+        <DataTemplate x:Key="TextFieldTemplate" DataType="{x:Type editor:FieldViewModel}">
+            <fields:TextFieldView Label="{Binding Label}" Value="{Binding DisplayValue}" />
+        </DataTemplate>
+        <DataTemplate x:Key="CodeFieldTemplate" DataType="{x:Type editor:FieldViewModel}">
+            <fields:CodeFieldView Label="{Binding Label}" Value="{Binding DisplayValue}" />
+        </DataTemplate>
+        <DataTemplate x:Key="SecretFieldTemplate" DataType="{x:Type editor:FieldViewModel}">
+            <fields:SecretFieldView Label="{Binding Label}"
+                                    Value="{Binding DisplayValue}"
+                                    RevealText="{Binding RevealButtonText}"
+                                    RevealCommand="{Binding ToggleRevealCommand}"
+                                    CopyCommand="{Binding CopySensitiveCommand}" />
+        </DataTemplate>
+
+        <!-- Modo edición: un mismo componente editor; los temporales permiten etiqueta y tipo. -->
+        <DataTemplate x:Key="EditFieldTemplate" DataType="{x:Type editor:EditableFieldViewModel}">
+            <StackPanel>
+                <Grid Margin="0,0,0,8"
+                      Visibility="{Binding IsTemporary, Converter={StaticResource BoolToVisibility}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Style="{StaticResource Cv.TextBox.Input}"
+                             FontFamily="{DynamicResource Cv.Font.Ui}"
+                             Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}"
+                             ToolTip="Nombre del campo"
+                             AutomationProperties.Name="Nombre del campo nuevo" />
+                    <ComboBox Grid.Column="1"
+                              Margin="6,0,0,0"
+                              MinWidth="150"
+                              Height="{DynamicResource Cv.Size.ButtonHeight}"
+                              VerticalContentAlignment="Center"
+                              ItemsSource="{x:Static editor:EditableFieldViewModel.TypeOptions}"
+                              DisplayMemberPath="Label"
+                              SelectedItem="{Binding SelectedTypeOption}"
+                              ToolTip="Tipo de campo"
+                              AutomationProperties.Name="Tipo del campo nuevo" />
+                    <Button Grid.Column="2"
+                            Margin="4,0,0,0"
+                            Style="{StaticResource Cv.Button.DangerIcon}"
+                            Content="&#xE74D;"
+                            Command="{Binding RemoveCommand}"
+                            ToolTip="Quitar campo"
+                            AutomationProperties.Name="Quitar campo" />
+                </Grid>
+                <fields:FieldEditor Label="{Binding Label}"
+                                    Value="{Binding Value, Mode=TwoWay}"
+                                    IsMultiline="{Binding IsMultiline}"
+                                    IsCode="{Binding IsCode}"
+                                    IsSensitive="{Binding IsSensitive}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <fields:FieldTemplateSelector x:Key="FieldSelector"
+                                      TextTemplate="{StaticResource TextFieldTemplate}"
+                                      CodeTemplate="{StaticResource CodeFieldTemplate}"
+                                      SecretTemplate="{StaticResource SecretFieldTemplate}" />
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- Sin página seleccionada -->
+        <components:EmptyState Margin="{DynamicResource Cv.Padding.Content}"
+                               Glyph="&#xE8A5;"
+                               Title="Selecciona una página"
+                               Description="Su contenido aparecerá aquí.">
+            <components:EmptyState.Style>
+                <Style TargetType="components:EmptyState">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasPage}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </components:EmptyState.Style>
+        </components:EmptyState>
+
+        <DockPanel Visibility="{Binding HasPage, Converter={StaticResource BoolToVisibility}}">
+            <!-- ===== Encabezado + acciones (fijos) ===== -->
+            <Border DockPanel.Dock="Top"
+                    Padding="24,20,24,14"
+                    BorderBrush="{DynamicResource Cv.Brush.Border}"
+                    BorderThickness="{DynamicResource Cv.Border.Bottom}">
+                <StackPanel MaxWidth="{DynamicResource Cv.MaxWidth.Readable}" HorizontalAlignment="Stretch">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                   Style="{StaticResource Cv.Text.Title}"
+                                   Text="{Binding Page.Title}"
+                                   ToolTip="{Binding Page.Title}" />
+                        <Border Grid.Column="1"
+                                Margin="12,0,0,0"
+                                Padding="8,2,8,2"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource Cv.Brush.Selected}"
+                                CornerRadius="{DynamicResource Cv.Radius.Control}">
+                            <TextBlock Style="{StaticResource Cv.Text.Small}"
+                                       Foreground="{DynamicResource Cv.Brush.SelectedText}"
+                                       FontWeight="SemiBold"
+                                       Text="{Binding TypeLabel}" />
+                        </Border>
+                        <!-- Favorito: el icono cambia (contorno / relleno), no solo el color. -->
+                        <Button Grid.Column="2"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                Command="{Binding ToggleFavoriteCommand}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource Cv.Button.Icon}">
+                                    <Setter Property="Content" Value="&#xE734;" />
+                                    <Setter Property="ToolTip" Value="Agregar a favoritos" />
+                                    <Setter Property="AutomationProperties.Name" Value="Agregar a favoritos" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Page.IsFavorite}" Value="True">
+                                            <Setter Property="Content" Value="&#xE735;" />
+                                            <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.Primary}" />
+                                            <Setter Property="ToolTip" Value="Quitar de favoritos" />
+                                            <Setter Property="AutomationProperties.Name" Value="Quitar de favoritos" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
+                    <TextBlock Margin="0,4,0,0" Style="{StaticResource Cv.Text.Small}" Text="{Binding UpdatedAtText}" />
+
+                    <StackPanel Margin="0,14,0,0" Orientation="Horizontal">
+                        <Button Style="{StaticResource Cv.Button.Primary}"
+                                Command="{Binding CopyCommand}"
+                                ToolTip="Copiar al portapapeles"
+                                AutomationProperties.Name="Copiar">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Cv.Text.Icon}" Margin="0,0,8,0" Text="&#xE8C8;" />
+                                <TextBlock VerticalAlignment="Center" Text="Copiar" />
+                            </StackPanel>
+                        </Button>
+                        <Button Margin="8,0,0,0"
+                                Style="{StaticResource Cv.Button.Secondary}"
+                                Command="{Binding EditCommand}"
+                                ToolTip="Editar la página"
+                                AutomationProperties.Name="Editar">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Cv.Text.Icon}" Margin="0,0,8,0" Text="&#xE70F;" />
+                                <TextBlock VerticalAlignment="Center" Text="Editar" />
+                            </StackPanel>
+                        </Button>
+                        <Button Margin="8,0,0,0"
+                                Style="{StaticResource Cv.Button.Icon}"
+                                Content="&#xECC8;"
+                                Command="{Binding DuplicateCommand}"
+                                ToolTip="Duplicar página"
+                                AutomationProperties.Name="Duplicar página" />
+                        <Button Margin="4,0,0,0"
+                                Style="{StaticResource Cv.Button.DangerIcon}"
+                                Content="&#xE74D;"
+                                Command="{Binding DeleteCommand}"
+                                ToolTip="Eliminar página"
+                                AutomationProperties.Name="Eliminar página" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ===== Metadatos (pie fijo) ===== -->
+            <Border DockPanel.Dock="Bottom"
+                    Padding="24,8,24,8"
+                    BorderBrush="{DynamicResource Cv.Brush.Border}"
+                    BorderThickness="0,1,0,0">
+                <DockPanel MaxWidth="{DynamicResource Cv.MaxWidth.Readable}">
+                    <TextBlock DockPanel.Dock="Right"
+                               VerticalAlignment="Center"
+                               Style="{StaticResource Cv.Text.Small}"
+                               Text="{Binding CharacterCountText}" />
+                    <ItemsControl ItemsSource="{Binding Tags}"
+                                  Focusable="False"
+                                  AutomationProperties.Name="Etiquetas"
+                                  Visibility="{Binding HasTags, Converter={StaticResource BoolToVisibility}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,6,0"
+                                        Padding="8,1,8,1"
+                                        Background="{DynamicResource Cv.Brush.Hover}"
+                                        CornerRadius="{DynamicResource Cv.Radius.Control}">
+                                    <TextBlock Style="{StaticResource Cv.Text.Small}" Text="{Binding}" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </DockPanel>
+            </Border>
+
+            <!-- ===== Contenido desplazable ===== -->
+            <Grid>
+            <!-- Modo lectura -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Focusable="False"
+                          Visibility="{Binding IsReading, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Margin="24,16,24,24" MaxWidth="{DynamicResource Cv.MaxWidth.Readable}">
+                    <!-- Etapa 6: atajo con plantilla ($archivo, $texto, $ruta, $nombre, $fecha) -->
+                    <components:TemplatePreview Margin="0,0,0,16"
+                                                TemplateText="{Binding CommandTemplate}"
+                                                RenderedText="{Binding RenderedCommand}"
+                                                Variables="{Binding Variables}"
+                                                PickFileCommand="{Binding PickFileCommand}"
+                                                PickFolderCommand="{Binding PickFolderCommand}"
+                                                PasteCommand="{Binding PasteVariableCommand}"
+                                                ResetCommand="{Binding ResetVariableCommand}"
+                                                Visibility="{Binding HasTemplatePreview, Converter={StaticResource BoolToVisibility}}" />
+
+                    <!-- Campos dinámicos: cada tipo se dibuja con su componente. -->
+                    <ItemsControl ItemsSource="{Binding Fields}"
+                                  ItemTemplateSelector="{StaticResource FieldSelector}"
+                                  Focusable="False">
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="Margin" Value="0,0,0,16" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Modo edición (etapa 8) -->
+            <DockPanel Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}">
+                <Border DockPanel.Dock="Bottom"
+                        Padding="24,10,24,10"
+                        Background="{DynamicResource Cv.Brush.SurfaceSubtle}"
+                        BorderBrush="{DynamicResource Cv.Brush.Border}"
+                        BorderThickness="0,1,0,0">
+                    <DockPanel MaxWidth="{DynamicResource Cv.MaxWidth.Readable}">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button Style="{StaticResource Cv.Button.Secondary}"
+                                    Content="Cancelar"
+                                    Command="{Binding CancelEditCommand}"
+                                    ToolTip="Cancelar (Esc)"
+                                    AutomationProperties.Name="Cancelar edición" />
+                            <Button Margin="8,0,0,0"
+                                    Style="{StaticResource Cv.Button.Primary}"
+                                    Content="Guardar"
+                                    Command="{Binding SaveCommand}"
+                                    ToolTip="Guardar (Ctrl+S)"
+                                    AutomationProperties.Name="Guardar cambios" />
+                        </StackPanel>
+                        <TextBlock VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Cv.Text.Small}">
+                                    <Setter Property="Text" Value="Sin cambios. Los cambios se guardan solo en memoria." />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDirty}" Value="True">
+                                            <Setter Property="Text" Value="Cambios sin guardar." />
+                                            <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.Warning}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </DockPanel>
+                </Border>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Focusable="False">
+                    <StackPanel Margin="24,16,24,24" MaxWidth="{DynamicResource Cv.MaxWidth.Readable}">
+                        <TextBlock Style="{StaticResource Cv.Text.FieldLabel}" Text="Título" />
+                        <TextBox Style="{StaticResource Cv.TextBox.Input}"
+                                 FontFamily="{DynamicResource Cv.Font.Ui}"
+                                 FontSize="{DynamicResource Cv.FontSize.SectionTitle}"
+                                 Height="40"
+                                 MaxLength="120"
+                                 Text="{Binding EditTitle, UpdateSourceTrigger=PropertyChanged}"
+                                 AutomationProperties.Name="Título de la página" />
+                        <TextBlock Margin="0,4,0,0"
+                                   Foreground="{DynamicResource Cv.Brush.Danger}"
+                                   Text="{Binding TitleError}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Cv.Text.Small}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding TitleError}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <ItemsControl Margin="0,16,0,0"
+                                      ItemsSource="{Binding EditFields}"
+                                      ItemTemplate="{StaticResource EditFieldTemplate}"
+                                      Focusable="False">
+                            <ItemsControl.ItemContainerStyle>
+                                <Style TargetType="ContentPresenter">
+                                    <Setter Property="Margin" Value="0,0,0,16" />
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
+                        </ItemsControl>
+
+                        <Button HorizontalAlignment="Left"
+                                Style="{StaticResource Cv.Button.Ghost}"
+                                Command="{Binding AddFieldCommand}"
+                                ToolTip="Agregar un campo temporal (solo en memoria)"
+                                AutomationProperties.Name="Agregar campo">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Cv.Text.Icon}" Margin="0,0,10,0" Text="&#xE710;" />
+                                <TextBlock VerticalAlignment="Center" Text="Agregar campo" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+            </Grid>
+        </DockPanel>
+    </Grid>
+</UserControl>

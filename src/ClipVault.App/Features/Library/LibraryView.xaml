@@ -1,0 +1,320 @@
+<!--
+    Biblioteca — Etapas 4 a 8: navegación, lista de páginas y editor (lectura, plantilla $archivo,
+    datos sensibles y edición).
+    Barra superior (48) + tres columnas: navegación (226) | páginas (210) | contenido (*).
+    Cada columna tiene desplazamiento propio y se redimensiona con GridSplitter
+    respetando sus anchos mínimos.
+    Atajos: Ctrl+N nueva página · Ctrl+Shift+N nueva sección · Ctrl+F buscar · F2 renombrar sección ·
+    Ctrl+S guardar edición · Esc cancelar edición.
+-->
+<UserControl x:Class="ClipVault.App.Features.Library.LibraryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:library="clr-namespace:ClipVault.App.Features.Library"
+             xmlns:components="clr-namespace:ClipVault.App.Components"
+             xmlns:behaviors="clr-namespace:ClipVault.App.Components.Behaviors"
+             xmlns:converters="clr-namespace:ClipVault.App.Converters"
+             xmlns:editor="clr-namespace:ClipVault.App.Features.Library.Editor"
+             xmlns:settings="clr-namespace:ClipVault.App.Features.Library.Settings"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=library:LibraryViewModel}"
+             d:DesignWidth="1280" d:DesignHeight="712"
+             Background="{DynamicResource Cv.Brush.Surface}"
+             FontFamily="{DynamicResource Cv.Font.Ui}">
+    <UserControl.InputBindings>
+        <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding NewPageCommand}" />
+        <KeyBinding Key="N" Modifiers="Ctrl+Shift" Command="{Binding NewSectionCommand}" />
+        <KeyBinding Key="F2" Command="{Binding RenameSelectedSectionCommand}" />
+        <!-- Modo edición (etapa 8): Ctrl+S guarda; Esc cancela (pregunta si hay cambios). -->
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding Editor.SaveCommand}" />
+        <!-- Esc según contexto: cierra el panel ⚙ o cancela la edición. -->
+        <KeyBinding Key="Escape" Command="{Binding EscapeCommand}" />
+    </UserControl.InputBindings>
+
+    <!-- Ctrl+F (gesto estándar de ApplicationCommands.Find) enfoca la búsqueda: acción puramente visual. -->
+    <UserControl.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Find" Executed="OnFindExecuted" />
+    </UserControl.CommandBindings>
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <converters:HexColorToBrushConverter x:Key="HexToBrush" />
+        <converters:InverseBooleanConverter x:Key="Not" />
+
+        <!-- Campo de renombrado en línea, compartido por secciones y páginas.
+             Su DataContext es un InlineRenameViewModel. -->
+        <DataTemplate x:Key="InlineRenameTemplate" DataType="{x:Type library:InlineRenameViewModel}">
+            <TextBox Style="{StaticResource Cv.TextBox.Inline}"
+                     MaxLength="80"
+                     Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
+                     AutomationProperties.Name="Nuevo nombre"
+                     behaviors:InlineEdit.FocusWhenVisible="True"
+                     behaviors:InlineEdit.LostFocusCommand="{Binding FinishCommand}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding CommitCommand}" />
+                    <KeyBinding Key="Escape" Command="{Binding CancelCommand}" />
+                </TextBox.InputBindings>
+            </TextBox>
+        </DataTemplate>
+
+        <!-- Filtro ("Todos los elementos", "Favoritos"). -->
+        <DataTemplate DataType="{x:Type library:FilterNavItemViewModel}">
+            <components:NavItemRow Glyph="{Binding Glyph}"
+                                   Label="{Binding Label}"
+                                   Count="{Binding Count}"
+                                   ToolTip="{Binding Label}" />
+        </DataTemplate>
+
+        <!-- Sección: fila normal o campo de renombrado. -->
+        <DataTemplate DataType="{x:Type library:SectionViewModel}">
+            <Grid ToolTip="{Binding ToolTip}">
+                <components:NavItemRow Glyph="{Binding Glyph}"
+                                       Label="{Binding Label}"
+                                       Count="{Binding Count}"
+                                       IconBrush="{Binding ColorHex, Converter={StaticResource HexToBrush}}">
+                    <components:NavItemRow.Style>
+                        <Style TargetType="components:NavItemRow">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Rename.IsEditing}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </components:NavItemRow.Style>
+                </components:NavItemRow>
+                <ContentPresenter Content="{Binding Rename}"
+                                  ContentTemplate="{StaticResource InlineRenameTemplate}"
+                                  Visibility="{Binding Rename.IsEditing, Converter={StaticResource BoolToVisibility}}" />
+            </Grid>
+        </DataTemplate>
+
+        <!-- Página: tarjeta o campo de renombrado. -->
+        <DataTemplate DataType="{x:Type library:PageListItemViewModel}">
+            <Grid ToolTip="{Binding ToolTip}">
+                <components:ListItemCard Title="{Binding Title}"
+                                         Preview="{Binding Preview}"
+                                         Meta="{Binding Meta}"
+                                         IsFavorite="{Binding IsFavorite}"
+                                         IsSensitive="{Binding IsSensitive}"
+                                         HasCode="{Binding HasCommand}"
+                                         UseMonospacePreview="{Binding HasCommand}">
+                    <components:ListItemCard.Style>
+                        <Style TargetType="components:ListItemCard">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Rename.IsEditing}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </components:ListItemCard.Style>
+                </components:ListItemCard>
+                <ContentPresenter Content="{Binding Rename}"
+                                  ContentTemplate="{StaticResource InlineRenameTemplate}"
+                                  Visibility="{Binding Rename.IsEditing, Converter={StaticResource BoolToVisibility}}" />
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="{DynamicResource Cv.Size.TopBarGridHeight}" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ===== A. Barra superior: ruta + acciones ===== -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource Cv.Brush.TopBar}"
+                BorderBrush="{DynamicResource Cv.Brush.Border}"
+                BorderThickness="{DynamicResource Cv.Border.Bottom}"
+                Padding="16,0,12,0">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Style="{StaticResource Cv.Button.Icon}"
+                            Content="&#xE8A5;"
+                            Command="{Binding NewPageCommand}"
+                            ToolTip="Nueva página (Ctrl+N)"
+                            AutomationProperties.Name="Nueva página" />
+                    <Button Style="{StaticResource Cv.Button.Icon}"
+                            Content="&#xE8F4;"
+                            Command="{Binding NewSectionCommand}"
+                            ToolTip="Nueva sección (Ctrl+Shift+N)"
+                            AutomationProperties.Name="Nueva sección" />
+                    <Button Style="{StaticResource Cv.Button.Icon}"
+                            Content="&#xE721;"
+                            Command="ApplicationCommands.Find"
+                            ToolTip="Buscar páginas (Ctrl+F)"
+                            AutomationProperties.Name="Buscar páginas" />
+                    <Button Style="{StaticResource Cv.Button.Icon}"
+                            Content="&#xE713;"
+                            Command="{Binding OpenSettingsCommand}"
+                            ToolTip="Configuración de copiado y pegado"
+                            AutomationProperties.Name="Configuración de copiado y pegado" />
+                </StackPanel>
+                <TextBlock VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           Style="{StaticResource Cv.Text.Muted}"
+                           TextWrapping="NoWrap"
+                           Text="{Binding Breadcrumb}"
+                           ToolTip="{Binding Breadcrumb}"
+                           AutomationProperties.Name="Ubicación actual" />
+            </DockPanel>
+        </Border>
+
+        <!-- ===== Tres columnas ===== -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{DynamicResource Cv.Width.Navigation}"
+                                  MinWidth="{DynamicResource Cv.MinWidth.Navigation}" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="{DynamicResource Cv.Width.PageList}"
+                                  MinWidth="{DynamicResource Cv.MinWidth.PageList}" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*"
+                                  MinWidth="{DynamicResource Cv.MinWidth.Content}" />
+            </Grid.ColumnDefinitions>
+
+            <!-- B. Navegación lateral: filtros + secciones + acciones al pie -->
+            <!-- Navegación y páginas se bloquean mientras se edita una página (etapa 8). -->
+            <DockPanel Grid.Column="0"
+                       Background="{DynamicResource Cv.Brush.SurfaceSubtle}"
+                       IsEnabled="{Binding IsNavigationLocked, Converter={StaticResource Not}}"
+                       ToolTipService.ShowOnDisabled="True">
+                <StackPanel DockPanel.Dock="Bottom" Margin="6,6,6,8">
+                    <Border Height="1" Margin="0,0,0,6" Background="{DynamicResource Cv.Brush.Border}" />
+                    <Button Style="{StaticResource Cv.Button.Ghost}"
+                            Command="{Binding NewSectionCommand}"
+                            ToolTip="Nueva sección (Ctrl+Shift+N)"
+                            AutomationProperties.Name="Nueva sección">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Cv.Text.Icon}" Margin="0,0,10,0" Text="&#xE710;" />
+                            <TextBlock VerticalAlignment="Center" Text="Nueva sección" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource Cv.Button.Ghost}"
+                            Command="{Binding OpenSettingsCommand}"
+                            ToolTip="Configuración de copiado y pegado"
+                            AutomationProperties.Name="Configuración">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Cv.Text.Icon}" Margin="0,0,10,0" Text="&#xE713;" />
+                            <TextBlock VerticalAlignment="Center" Text="Configuración" />
+                        </StackPanel>
+                    </Button>
+                    <!-- La maqueta debe señalar lo simulado (criterio del JSON). -->
+                    <TextBlock Margin="10,6,10,0"
+                               Style="{StaticResource Cv.Text.Small}"
+                               Text="Datos de ejemplo: los cambios no se guardan." />
+                </StackPanel>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Focusable="False">
+                    <StackPanel Margin="0,8,0,8">
+                        <TextBlock Margin="16,4,12,4" Style="{StaticResource Cv.Text.Small}" Text="Filtros" />
+                        <components:NavList ItemsSource="{Binding Filters}"
+                                            SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                                            ListName="Filtros" />
+                        <TextBlock Margin="16,14,12,4" Style="{StaticResource Cv.Text.Small}" Text="Secciones" />
+                        <components:NavList ItemsSource="{Binding Sections}"
+                                            SelectedItem="{Binding SelectedSection, Mode=TwoWay}"
+                                            ListName="Secciones" />
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+
+            <GridSplitter Grid.Column="1"
+                          Style="{StaticResource Cv.GridSplitter.Vertical}"
+                          AutomationProperties.Name="Ajustar ancho de la navegación"
+                          ToolTip="Arrastra para ajustar el ancho" />
+
+            <!-- C. Lista de páginas: encabezado, búsqueda, lista y estados vacíos -->
+            <DockPanel Grid.Column="2"
+                       Background="{DynamicResource Cv.Brush.Surface}"
+                       IsEnabled="{Binding IsNavigationLocked, Converter={StaticResource Not}}">
+                <components:PanelHeader DockPanel.Dock="Top" Title="Páginas">
+                    <components:PanelHeader.Actions>
+                        <Button Style="{StaticResource Cv.Button.Icon}"
+                                Width="28" Height="28" MinWidth="28"
+                                Content="&#xE710;"
+                                Command="{Binding NewPageCommand}"
+                                ToolTip="Nueva página (Ctrl+N)"
+                                AutomationProperties.Name="Nueva página" />
+                    </components:PanelHeader.Actions>
+                </components:PanelHeader>
+                <components:SearchBox x:Name="PageSearch"
+                                      DockPanel.Dock="Top"
+                                      Margin="8,0,8,8"
+                                      Placeholder="Buscar página"
+                                      Text="{Binding SearchText, Mode=TwoWay}" />
+                <Border DockPanel.Dock="Top" Height="1" Background="{DynamicResource Cv.Brush.Border}" />
+                <Border DockPanel.Dock="Top"
+                        Padding="10,6,10,6"
+                        Background="{DynamicResource Cv.Brush.WarningBackground}"
+                        Visibility="{Binding IsNavigationLocked, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource Cv.Text.Small}"
+                               Foreground="{DynamicResource Cv.Brush.Warning}"
+                               Text="Editando: guarda o cancela para cambiar de página." />
+                </Border>
+
+                <Grid>
+                    <components:SelectableList ItemsSource="{Binding VisiblePages}"
+                                               SelectedItem="{Binding SelectedPage, Mode=TwoWay}"
+                                               ListName="Páginas" />
+
+                    <components:EmptyState Margin="12,24,12,24"
+                                           VerticalAlignment="Top"
+                                           Glyph="&#xE8A5;"
+                                           Title="{Binding EmptyTitle}"
+                                           Description="{Binding EmptyDescription}"
+                                           ActionText="Crear página"
+                                           ActionCommand="{Binding NewPageCommand}"
+                                           Visibility="{Binding IsContextEmpty, Converter={StaticResource BoolToVisibility}}" />
+
+                    <components:EmptyState Margin="12,24,12,24"
+                                           VerticalAlignment="Top"
+                                           Glyph="&#xE721;"
+                                           Title="No encontramos resultados"
+                                           Description="Prueba con otra palabra o revisa la sección activa."
+                                           ActionText="Limpiar búsqueda"
+                                           ActionCommand="{Binding ClearSearchCommand}"
+                                           Visibility="{Binding IsNoSearchResults, Converter={StaticResource BoolToVisibility}}" />
+                </Grid>
+            </DockPanel>
+
+            <GridSplitter Grid.Column="3"
+                          Style="{StaticResource Cv.GridSplitter.Vertical}"
+                          AutomationProperties.Name="Ajustar ancho de la lista de páginas"
+                          ToolTip="Arrastra para ajustar el ancho" />
+
+            <!-- D. Editor de la página seleccionada (etapas 5 y 6) -->
+            <editor:PageEditorView Grid.Column="4" DataContext="{Binding Editor}" />
+        </Grid>
+
+        <!-- Panel ⚙ (etapa 9): superpuesto a la derecha; clic en el fondo o Esc lo cierra. -->
+        <Grid Grid.Row="0"
+              Grid.RowSpan="2"
+              Panel.ZIndex="4"
+              Visibility="{Binding IsSettingsOpen, Converter={StaticResource BoolToVisibility}}">
+            <Border Background="{DynamicResource Cv.Brush.Overlay}">
+                <Border.InputBindings>
+                    <MouseBinding Gesture="LeftClick" Command="{Binding CloseSettingsCommand}" />
+                </Border.InputBindings>
+            </Border>
+            <settings:CopyPasteSettingsView Width="420"
+                                            HorizontalAlignment="Right"
+                                            KeyboardNavigation.TabNavigation="Cycle" />
+        </Grid>
+
+        <!-- Aviso breve ("Copiado al portapapeles"); no bloquea la interfaz. -->
+        <components:NoticeBar Grid.Row="1"
+                              Margin="0,0,20,20"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Bottom"
+                              Panel.ZIndex="5"
+                              Message="{Binding Notice.Message}"
+                              IsOpen="{Binding Notice.IsVisible}"
+                              Tone="{Binding Notice.Tone}"
+                              DismissCommand="{Binding Notice.DismissCommand}" />
+    </Grid>
+</UserControl>
