@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.local
+.vite/
+coverage/
+# Tauri (cuando se agregue)
+src-tauri/target/
