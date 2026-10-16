@@ -1,0 +1,25 @@
+<!--
+    Componente de presentación: lista seleccionable con desplazamiento propio
+    (páginas y, en el futuro, otras listas largas).
+    Entradas: ItemsSource, SelectedItem (bidireccional), ListName e ItemStyle
+    (estilo del contenedor; por defecto el de páginas). Las plantillas de ítem las
+    aporta quien la usa (DataTemplate por tipo). Virtualización con reciclaje activa.
+-->
+<UserControl x:Class="ClipVault.App.Components.SelectableList"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             Focusable="False">
+    <ListBox ItemsSource="{Binding ItemsSource, ElementName=Root}"
+             SelectedItem="{Binding SelectedItem, ElementName=Root, Mode=TwoWay}"
+             AutomationProperties.Name="{Binding ListName, ElementName=Root}"
+             ItemContainerStyle="{Binding ItemStyle, ElementName=Root, TargetNullValue={StaticResource Cv.ListBoxItem.Page}}"
+             Background="Transparent"
+             BorderThickness="0"
+             SelectionMode="Single"
+             VirtualizingPanel.IsVirtualizing="True"
+             VirtualizingPanel.VirtualizationMode="Recycling"
+             VirtualizingPanel.ScrollUnit="Pixel"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+             ScrollViewer.VerticalScrollBarVisibility="Auto" />
+</UserControl>

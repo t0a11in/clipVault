@@ -1,0 +1,59 @@
+<!--
+    Componente: editor de un campo (etapa 8).
+    Entradas: Label, Value (bidireccional), IsMultiline, IsCode e IsSensitive.
+    - Normal: TextBox (una línea o multilínea).
+    - Código: TextBox monoespaciado multilínea.
+    - Sensible: PasswordBox (nunca se muestra el texto mientras se escribe).
+-->
+<UserControl x:Class="ClipVault.App.Components.Fields.FieldEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:behaviors="clr-namespace:ClipVault.App.Components.Behaviors"
+             x:Name="Root"
+             Focusable="False">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </UserControl.Resources>
+    <StackPanel>
+        <TextBlock Style="{StaticResource Cv.Text.FieldLabel}" Text="{Binding Label, ElementName=Root}" />
+
+        <TextBox Text="{Binding Value, ElementName=Root, UpdateSourceTrigger=PropertyChanged}"
+                 AutomationProperties.Name="{Binding Label, ElementName=Root}">
+            <TextBox.Style>
+                <Style TargetType="TextBox" BasedOn="{StaticResource Cv.TextBox.Input}">
+                    <Setter Property="FontFamily" Value="{DynamicResource Cv.Font.Ui}" />
+                    <Setter Property="FontSize" Value="{DynamicResource Cv.FontSize.Body}" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsMultiline, ElementName=Root}" Value="True">
+                            <Setter Property="Height" Value="NaN" />
+                            <Setter Property="MinHeight" Value="72" />
+                            <Setter Property="AcceptsReturn" Value="True" />
+                            <Setter Property="AcceptsTab" Value="True" />
+                            <Setter Property="TextWrapping" Value="Wrap" />
+                            <Setter Property="Padding" Value="8,6,8,6" />
+                            <Setter Property="VerticalContentAlignment" Value="Top" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsCode, ElementName=Root}" Value="True">
+                            <Setter Property="FontFamily" Value="{DynamicResource Cv.Font.Code}" />
+                            <Setter Property="FontSize" Value="13" />
+                            <Setter Property="Background" Value="{DynamicResource Cv.Brush.SurfaceSubtle}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsSensitive, ElementName=Root}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBox.Style>
+        </TextBox>
+
+        <PasswordBox Height="{DynamicResource Cv.Size.ButtonHeight}"
+                     Padding="8,0,8,0"
+                     VerticalContentAlignment="Center"
+                     BorderBrush="{DynamicResource Cv.Brush.Sensitive}"
+                     Background="{DynamicResource Cv.Brush.SensitiveBackground}"
+                     ToolTip="Dato sensible: contenido oculto"
+                     AutomationProperties.Name="{Binding Label, ElementName=Root}"
+                     behaviors:PasswordBoxAssist.BoundPassword="{Binding Value, ElementName=Root, Mode=TwoWay}"
+                     Visibility="{Binding IsSensitive, ElementName=Root, Converter={StaticResource BoolToVisibility}}" />
+    </StackPanel>
+</UserControl>

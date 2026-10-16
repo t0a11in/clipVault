@@ -1,0 +1,24 @@
+<!--
+    Componente de presentación: lista de navegación (filtros, secciones…).
+    Entradas: ItemsSource, SelectedItem (bidireccional) y ListName (nombre accesible).
+    No define plantillas de ítem: quien lo usa las aporta con DataTemplate por
+    tipo (como <ng-template> en Angular). Así sirve para cualquier tipo de ítem.
+    Mantiene virtualización y la selección visible aunque pierda el foco.
+-->
+<UserControl x:Class="ClipVault.App.Components.NavList"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             Focusable="False">
+    <ListBox ItemsSource="{Binding ItemsSource, ElementName=Root}"
+             SelectedItem="{Binding SelectedItem, ElementName=Root, Mode=TwoWay}"
+             AutomationProperties.Name="{Binding ListName, ElementName=Root}"
+             ItemContainerStyle="{StaticResource Cv.ListBoxItem.Nav}"
+             Background="Transparent"
+             BorderThickness="0"
+             SelectionMode="Single"
+             VirtualizingPanel.IsVirtualizing="True"
+             VirtualizingPanel.VirtualizationMode="Recycling"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+             ScrollViewer.VerticalScrollBarVisibility="Disabled" />
+</UserControl>

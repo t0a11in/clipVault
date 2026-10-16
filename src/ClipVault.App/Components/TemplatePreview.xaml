@@ -1,0 +1,93 @@
+<!--
+    Componente de presentación: plantilla con variables y su resultado renderizado.
+    Entradas: TemplateText, RenderedText, Variables (lista) y los comandos
+    PickFileCommand, PickFolderCommand, PasteCommand y ResetCommand, que reciben la
+    variable como CommandParameter.
+    Cada variable debe exponer Token, Value (editable), Hint e IsPath
+    (ver Features/Library/Editor/TemplateVariableViewModel). No ejecuta nada.
+-->
+<UserControl x:Class="ClipVault.App.Components.TemplatePreview"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ClipVault.App.Components"
+             x:Name="Root"
+             Focusable="False">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </UserControl.Resources>
+    <Border Padding="16"
+            Background="{DynamicResource Cv.Brush.Surface}"
+            BorderBrush="{DynamicResource Cv.Brush.Border}"
+            BorderThickness="{DynamicResource Cv.Border.Thickness}"
+            CornerRadius="{DynamicResource Cv.Radius.Panel}">
+        <StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                <TextBlock Style="{StaticResource Cv.Text.Icon}" Margin="0,0,8,0"
+                           Foreground="{DynamicResource Cv.Brush.Primary}" Text="&#xE943;" />
+                <TextBlock Style="{StaticResource Cv.Text.Body}" FontWeight="SemiBold" Text="Atajo con plantilla" />
+            </StackPanel>
+
+            <TextBlock Style="{StaticResource Cv.Text.FieldLabel}" Text="Plantilla guardada" />
+            <TextBox Style="{StaticResource Cv.TextBox.Code}"
+                     Text="{Binding TemplateText, ElementName=Root, Mode=OneWay}"
+                     AutomationProperties.Name="Plantilla guardada" />
+
+            <!-- Una fila por variable. Los comandos se buscan en este componente
+                 (RelativeSource) porque dentro de la plantilla el DataContext es la variable. -->
+            <ItemsControl Margin="0,6,0,0"
+                          ItemsSource="{Binding Variables, ElementName=Root}"
+                          Focusable="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="0,8,0,0">
+                            <TextBlock Margin="0,0,0,6" Style="{StaticResource Cv.Text.FieldLabel}">
+                                <Run FontFamily="{DynamicResource Cv.Font.Code}" Text="{Binding Token, Mode=OneWay}" />
+                                <Run Text="·" />
+                                <Run FontWeight="Normal" Text="{Binding Hint, Mode=OneWay}" />
+                            </TextBlock>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0"
+                                         Style="{StaticResource Cv.TextBox.Input}"
+                                         Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                         AutomationProperties.Name="{Binding Token}" />
+                                <StackPanel Grid.Column="1" Margin="6,0,0,0" Orientation="Horizontal">
+                                    <Button Style="{StaticResource Cv.Button.Icon}" Content="&#xE8E5;"
+                                            Visibility="{Binding IsPath, Converter={StaticResource BoolToVisibility}}"
+                                            Command="{Binding PickFileCommand, RelativeSource={RelativeSource AncestorType=local:TemplatePreview}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="Elegir archivo" AutomationProperties.Name="Elegir archivo" />
+                                    <Button Style="{StaticResource Cv.Button.Icon}" Content="&#xE8B7;"
+                                            Visibility="{Binding IsPath, Converter={StaticResource BoolToVisibility}}"
+                                            Command="{Binding PickFolderCommand, RelativeSource={RelativeSource AncestorType=local:TemplatePreview}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="Elegir carpeta" AutomationProperties.Name="Elegir carpeta" />
+                                    <Button Style="{StaticResource Cv.Button.Icon}" Content="&#xE77F;"
+                                            Command="{Binding PasteCommand, RelativeSource={RelativeSource AncestorType=local:TemplatePreview}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="Usar el texto del portapapeles" AutomationProperties.Name="Pegar del portapapeles" />
+                                    <Button Style="{StaticResource Cv.Button.Icon}" Content="&#xE72C;"
+                                            Command="{Binding ResetCommand, RelativeSource={RelativeSource AncestorType=local:TemplatePreview}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="Volver al valor predeterminado" AutomationProperties.Name="Restablecer valor" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Margin="0,14,0,6" Style="{StaticResource Cv.Text.FieldLabel}" Text="Resultado renderizado" />
+            <TextBox Style="{StaticResource Cv.TextBox.Code}"
+                     Background="{DynamicResource Cv.Brush.Selected}"
+                     BorderBrush="{DynamicResource Cv.Brush.Primary}"
+                     Text="{Binding RenderedText, ElementName=Root, Mode=OneWay}"
+                     AutomationProperties.Name="Resultado renderizado" />
+            <TextBlock Margin="0,8,0,0" Style="{StaticResource Cv.Text.Small}"
+                       Text="No se ejecuta nada: «Copiar» solo pone este texto en el portapapeles. Una variable vacía queda como $nombre." />
+        </StackPanel>
+    </Border>
+</UserControl>

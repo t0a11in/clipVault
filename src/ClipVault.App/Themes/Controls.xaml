@@ -1,0 +1,447 @@
+<!--
+    Estilos de controles de la Biblioteca. Todos tienen x:Key: se aplican solo
+    donde se piden y nunca reemplazan los estilos del Historial.
+    Estados cubiertos en botones: normal, hover, pressed, disabled y focus de teclado.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:theme="clr-namespace:ClipVault.App.Themes">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Tokens.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- ===== Botón base: una plantilla para todas las variantes ===== -->
+    <Style x:Key="Cv.Button.Base" TargetType="Button">
+        <Setter Property="FontFamily" Value="{DynamicResource Cv.Font.Ui}" />
+        <Setter Property="FontSize" Value="{DynamicResource Cv.FontSize.Body}" />
+        <Setter Property="Height" Value="{DynamicResource Cv.Size.ButtonHeight}" />
+        <Setter Property="MinWidth" Value="{DynamicResource Cv.Size.ButtonMinWidth}" />
+        <Setter Property="Padding" Value="{DynamicResource Cv.Padding.Button}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Cv.Border.Thickness}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="Chrome"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{DynamicResource Cv.Radius.Control}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+                        <!-- Anillo de foco superpuesto: no altera el tamaño del botón. -->
+                        <Border x:Name="FocusRing"
+                                Margin="-3"
+                                BorderBrush="{DynamicResource Cv.Brush.Focus}"
+                                BorderThickness="{DynamicResource Cv.Focus.Thickness}"
+                                CornerRadius="8"
+                                Visibility="Collapsed"
+                                IsHitTestVisible="False" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background"
+                                    Value="{Binding Path=(theme:ButtonAssist.HoverBackground), RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Chrome" Property="Background"
+                                    Value="{Binding Path=(theme:ButtonAssist.PressedBackground), RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="FocusRing" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Cv.Brush.DisabledBackground}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Cv.Brush.Border}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.DisabledText}" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Acción principal: índigo con texto blanco. Usar una sola por vista. -->
+    <Style x:Key="Cv.Button.Primary" TargetType="Button" BasedOn="{StaticResource Cv.Button.Base}">
+        <Setter Property="Background" Value="{DynamicResource Cv.Brush.Primary}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Cv.Brush.Primary}" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.OnPrimary}" />
+        <Setter Property="theme:ButtonAssist.HoverBackground" Value="{DynamicResource Cv.Brush.PrimaryHover}" />
+        <Setter Property="theme:ButtonAssist.PressedBackground" Value="{DynamicResource Cv.Brush.PrimaryPressed}" />
+    </Style>
+
+    <!-- Acción secundaria: fondo blanco, borde y texto neutro. -->
+    <Style x:Key="Cv.Button.Secondary" TargetType="Button" BasedOn="{StaticResource Cv.Button.Base}">
+        <Setter Property="Background" Value="{DynamicResource Cv.Brush.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Cv.Brush.Border}" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.Text}" />
+        <Setter Property="theme:ButtonAssist.HoverBackground" Value="{DynamicResource Cv.Brush.Hover}" />
+        <Setter Property="theme:ButtonAssist.PressedBackground" Value="{DynamicResource Cv.Brush.Border}" />
+    </Style>
+
+    <!-- Botón de solo icono. Requiere ToolTip y AutomationProperties.Name. -->
+    <Style x:Key="Cv.Button.Icon" TargetType="Button" BasedOn="{StaticResource Cv.Button.Base}">
+        <Setter Property="Width" Value="{DynamicResource Cv.Size.ButtonHeight}" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.MutedText}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Cv.Font.Icons}" />
+        <Setter Property="FontSize" Value="{DynamicResource Cv.FontSize.Icon}" />
+        <Setter Property="theme:ButtonAssist.HoverBackground" Value="{DynamicResource Cv.Brush.Hover}" />
+        <Setter Property="theme:ButtonAssist.PressedBackground" Value="{DynamicResource Cv.Brush.Border}" />
+    </Style>
+
+    <!-- Icono destructivo: neutro en reposo; fondo rojo suave y texto rojo al pasar el cursor. -->
+    <Style x:Key="Cv.Button.DangerIcon" TargetType="Button" BasedOn="{StaticResource Cv.Button.Icon}">
+        <Setter Property="theme:ButtonAssist.HoverBackground" Value="{DynamicResource Cv.Brush.DangerBackground}" />
+        <Setter Property="theme:ButtonAssist.PressedBackground" Value="{DynamicResource Cv.Brush.DangerBackground}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.Danger}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ===== Texto ===== -->
+    <Style x:Key="Cv.Text.Title" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Cv.Font.Ui}" />
+        <Setter Property="FontSize" Value="{DynamicResource Cv.FontSize.Title}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.Text}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style x:Key="Cv.Text.SectionTitle" TargetType="TextBlock" BasedOn="{StaticResource Cv.Text.Title}">
+        <Setter Property="FontSize" Value="{DynamicResource Cv.FontSize.SectionTitle}" />
+    </Style>
+    <Style x:Key="Cv.Text.Body" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Cv.Font.Ui}" />
+        <Setter Property="FontSize" Value="{DynamicResource Cv.FontSize.Body}" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.Text}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style x:Key="Cv.Text.Muted" TargetType="TextBlock" BasedOn="{StaticResource Cv.Text.Body}">
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.MutedText}" />
+    </Style>
+    <Style x:Key="Cv.Text.Small" TargetType="TextBlock" BasedOn="{StaticResource Cv.Text.Muted}">
+        <Setter Property="FontSize" Value="{DynamicResource Cv.FontSize.Small}" />
+    </Style>
+    <Style x:Key="Cv.Text.Icon" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Cv.Font.Icons}" />
+        <Setter Property="FontSize" Value="{DynamicResource Cv.FontSize.Icon}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- ===== Ítem de navegación (segmentos y, más adelante, secciones) =====
+         La selección usa colores propios: sigue visible aunque la lista pierda el foco. -->
+    <Style x:Key="Cv.ListBoxItem.Segment" TargetType="ListBoxItem">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.MutedText}" />
+        <Setter Property="Padding" Value="12,0,12,0" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Margin" Value="0,0,4,0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Grid>
+                        <Border x:Name="Chrome"
+                                Background="Transparent"
+                                CornerRadius="{DynamicResource Cv.Radius.Control}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <!-- Indicador inferior: la selección no depende solo del color de fondo. -->
+                        <Border x:Name="Indicator"
+                                Height="2"
+                                Margin="10,0,10,0"
+                                VerticalAlignment="Bottom"
+                                Background="{DynamicResource Cv.Brush.SelectedIndicator}"
+                                Visibility="Collapsed" />
+                        <Border x:Name="FocusRing"
+                                BorderBrush="{DynamicResource Cv.Brush.Focus}"
+                                BorderThickness="{DynamicResource Cv.Focus.Thickness}"
+                                CornerRadius="{DynamicResource Cv.Radius.Control}"
+                                Visibility="Collapsed"
+                                IsHitTestVisible="False" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Cv.Brush.Hover}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Cv.Brush.Selected}" />
+                            <Setter TargetName="Indicator" Property="Visibility" Value="Visible" />
+                            <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.SelectedText}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="FocusRing" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Divisor de columnas (GridSplitter) =====
+         Zona de arrastre de 5 DIP con una línea de 1 DIP; se resalta al pasar el cursor
+         o con foco de teclado (las flechas también redimensionan). -->
+    <Style x:Key="Cv.GridSplitter.Vertical" TargetType="GridSplitter">
+        <Setter Property="Width" Value="5" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="ResizeBehavior" Value="PreviousAndNext" />
+        <Setter Property="ResizeDirection" Value="Columns" />
+        <Setter Property="ShowsPreview" Value="False" />
+        <Setter Property="Cursor" Value="SizeWE" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="GridSplitter">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Border x:Name="Line"
+                                Width="1"
+                                HorizontalAlignment="Center"
+                                Background="{DynamicResource Cv.Brush.Border}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Line" Property="Width" Value="2" />
+                            <Setter TargetName="Line" Property="Background" Value="{DynamicResource Cv.Brush.Focus}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Line" Property="Width" Value="2" />
+                            <Setter TargetName="Line" Property="Background" Value="{DynamicResource Cv.Brush.Focus}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Ítem del riel lateral de áreas (Historial / Biblioteca) =====
+         Icono sobre etiqueta; selección con fondo suave + franja izquierda. -->
+    <Style x:Key="Cv.ListBoxItem.Rail" TargetType="ListBoxItem">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.MutedText}" />
+        <Setter Property="Width" Value="64" />
+        <Setter Property="Height" Value="56" />
+        <Setter Property="Margin" Value="0,0,0,4" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Grid>
+                        <Border x:Name="Chrome" Margin="6,0,6,0" Background="Transparent"
+                                CornerRadius="{DynamicResource Cv.Radius.Control}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <Border x:Name="Indicator" Width="3" Margin="0,10,0,10" HorizontalAlignment="Left"
+                                Background="{DynamicResource Cv.Brush.SelectedIndicator}" Visibility="Collapsed" />
+                        <Border x:Name="FocusRing" Margin="6,0,6,0"
+                                BorderBrush="{DynamicResource Cv.Brush.Focus}"
+                                BorderThickness="{DynamicResource Cv.Focus.Thickness}"
+                                CornerRadius="{DynamicResource Cv.Radius.Control}"
+                                Visibility="Collapsed" IsHitTestVisible="False" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Cv.Brush.Hover}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Cv.Brush.Selected}" />
+                            <Setter TargetName="Indicator" Property="Visibility" Value="Visible" />
+                            <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.SelectedText}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="FocusRing" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Ítem de lista de navegación (filtros y secciones) =====
+         La selección no depende del foco y no se indica solo con color (franja izquierda). -->
+    <Style x:Key="Cv.ListBoxItem.Nav" TargetType="ListBoxItem">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.Text}" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Margin" Value="6,1,6,1" />
+        <Setter Property="Padding" Value="10,0,8,0" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Grid>
+                        <Border x:Name="Chrome" Background="Transparent" Padding="{TemplateBinding Padding}"
+                                CornerRadius="{DynamicResource Cv.Radius.Control}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <Border x:Name="Indicator" Width="3" Margin="0,6,0,6" HorizontalAlignment="Left"
+                                Background="{DynamicResource Cv.Brush.SelectedIndicator}" Visibility="Collapsed" />
+                        <Border x:Name="FocusRing"
+                                BorderBrush="{DynamicResource Cv.Brush.Focus}"
+                                BorderThickness="{DynamicResource Cv.Focus.Thickness}"
+                                CornerRadius="{DynamicResource Cv.Radius.Control}"
+                                Visibility="Collapsed" IsHitTestVisible="False" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Cv.Brush.Hover}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Cv.Brush.Selected}" />
+                            <Setter TargetName="Indicator" Property="Visibility" Value="Visible" />
+                            <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.SelectedText}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="FocusRing" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Botón fantasma de ancho completo (acciones al pie del panel). -->
+    <Style x:Key="Cv.Button.Ghost" TargetType="Button" BasedOn="{StaticResource Cv.Button.Base}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.MutedText}" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="theme:ButtonAssist.HoverBackground" Value="{DynamicResource Cv.Brush.Hover}" />
+        <Setter Property="theme:ButtonAssist.PressedBackground" Value="{DynamicResource Cv.Brush.Border}" />
+    </Style>
+
+    <!-- Campo de edición en línea (renombrar). -->
+    <Style x:Key="Cv.TextBox.Inline" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{DynamicResource Cv.Font.Ui}" />
+        <Setter Property="FontSize" Value="{DynamicResource Cv.FontSize.Body}" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.Text}" />
+        <Setter Property="Background" Value="{DynamicResource Cv.Brush.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Cv.Brush.Focus}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Cv.Focus.Thickness}" />
+        <Setter Property="Padding" Value="4,2,4,2" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <!-- ===== Ítem de la lista de páginas =====
+         Fila con separador inferior; selección con fondo suave + franja izquierda de alto completo. -->
+    <Style x:Key="Cv.ListBoxItem.Page" TargetType="ListBoxItem">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.Text}" />
+        <Setter Property="Padding" Value="12,8,10,8" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Grid>
+                        <Border x:Name="Chrome"
+                                Background="Transparent"
+                                BorderBrush="{DynamicResource Cv.Brush.Border}"
+                                BorderThickness="{DynamicResource Cv.Border.Bottom}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                        </Border>
+                        <Border x:Name="Indicator" Width="3" HorizontalAlignment="Left"
+                                Background="{DynamicResource Cv.Brush.SelectedIndicator}" Visibility="Collapsed" />
+                        <Border x:Name="FocusRing"
+                                BorderBrush="{DynamicResource Cv.Brush.Focus}"
+                                BorderThickness="{DynamicResource Cv.Focus.Thickness}"
+                                Visibility="Collapsed" IsHitTestVisible="False" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Cv.Brush.Hover}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Cv.Brush.Selected}" />
+                            <Setter TargetName="Indicator" Property="Visibility" Value="Visible" />
+                            <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.SelectedText}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="FocusRing" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Campo de búsqueda: borde de entrada (contraste suficiente) y foco índigo. -->
+    <Style x:Key="Cv.TextBox.Search" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{DynamicResource Cv.Font.Ui}" />
+        <Setter Property="FontSize" Value="{DynamicResource Cv.FontSize.Body}" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.Text}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <!-- ===== Campos del editor (modo lectura) =====
+         TextBox de solo lectura: permite seleccionar y copiar parte del texto. -->
+    <Style x:Key="Cv.TextBox.ReadOnly" TargetType="TextBox">
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="IsReadOnlyCaretVisible" Value="False" />
+        <Setter Property="FontFamily" Value="{DynamicResource Cv.Font.Ui}" />
+        <Setter Property="FontSize" Value="{DynamicResource Cv.FontSize.Body}" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.Text}" />
+        <Setter Property="Background" Value="{DynamicResource Cv.Brush.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Cv.Brush.Border}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Cv.Border.Thickness}" />
+        <Setter Property="Padding" Value="10,8,10,8" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="AcceptsReturn" Value="True" />
+        <Setter Property="VerticalScrollBarVisibility" Value="Disabled" />
+    </Style>
+
+    <!-- Variante monoespaciada (comandos, plantillas, código). -->
+    <Style x:Key="Cv.TextBox.Code" TargetType="TextBox" BasedOn="{StaticResource Cv.TextBox.ReadOnly}">
+        <Setter Property="FontFamily" Value="{DynamicResource Cv.Font.Code}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Background" Value="{DynamicResource Cv.Brush.SurfaceSubtle}" />
+    </Style>
+
+    <!-- Campo editable de una línea (valor de variable). -->
+    <Style x:Key="Cv.TextBox.Input" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{DynamicResource Cv.Font.Code}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource Cv.Brush.Text}" />
+        <Setter Property="Background" Value="{DynamicResource Cv.Brush.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Cv.Brush.InputBorder}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Cv.Border.Thickness}" />
+        <Setter Property="Padding" Value="8,0,8,0" />
+        <Setter Property="Height" Value="{DynamicResource Cv.Size.ButtonHeight}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Style.Triggers>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter Property="BorderBrush" Value="{DynamicResource Cv.Brush.Focus}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Etiqueta de campo ("Descripción", "Comando"…). -->
+    <Style x:Key="Cv.Text.FieldLabel" TargetType="TextBlock" BasedOn="{StaticResource Cv.Text.Small}">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,0,0,6" />
+    </Style>
+</ResourceDictionary>

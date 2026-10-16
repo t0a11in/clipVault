@@ -1,0 +1,82 @@
+<!--
+    Componente de presentación: selector de áreas.
+    Entradas: ItemsSource, SelectedItem (bidireccional) y Orientation.
+    - Horizontal: segmentos con icono + texto en línea.
+    - Vertical: riel lateral con icono sobre texto (uso actual en MainWindow).
+    Cada ítem debe exponer Label, Glyph y ToolTip (ver Shell/AreaOption).
+-->
+<UserControl x:Class="ClipVault.App.Components.AreaSwitcher"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+    <UserControl.Resources>
+        <ItemsPanelTemplate x:Key="HorizontalPanel">
+            <StackPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+        <ItemsPanelTemplate x:Key="VerticalPanel">
+            <StackPanel Orientation="Vertical" />
+        </ItemsPanelTemplate>
+
+        <DataTemplate x:Key="HorizontalItem">
+            <StackPanel Orientation="Horizontal"
+                        ToolTip="{Binding ToolTip}">
+                <TextBlock Style="{StaticResource Cv.Text.Icon}" Margin="0,0,8,0" Text="{Binding Glyph}" />
+                <TextBlock VerticalAlignment="Center"
+                           FontFamily="{DynamicResource Cv.Font.Ui}"
+                           FontSize="{DynamicResource Cv.FontSize.Body}"
+                           Text="{Binding Label}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="VerticalItem">
+            <StackPanel ToolTip="{Binding ToolTip}">
+                <TextBlock HorizontalAlignment="Center"
+                           Style="{StaticResource Cv.Text.Icon}"
+                           FontSize="18"
+                           Text="{Binding Glyph}" />
+                <TextBlock Margin="0,4,0,0"
+                           HorizontalAlignment="Center"
+                           FontFamily="{DynamicResource Cv.Font.Ui}"
+                           FontSize="{DynamicResource Cv.FontSize.Small}"
+                           Text="{Binding Label}" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ListBox ItemsSource="{Binding ItemsSource, ElementName=Root}"
+             SelectedItem="{Binding SelectedItem, ElementName=Root, Mode=TwoWay}"
+             AutomationProperties.Name="Áreas de ClipVault"
+             Background="Transparent"
+             BorderThickness="0"
+             KeyboardNavigation.DirectionalNavigation="Cycle"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+             ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <ListBox.Style>
+            <Style TargetType="ListBox">
+                <Setter Property="ItemsPanel" Value="{StaticResource HorizontalPanel}" />
+                <Setter Property="ItemTemplate" Value="{StaticResource HorizontalItem}" />
+                <!-- Va en el estilo (no como atributo) para que el disparador Vertical pueda reemplazarlo. -->
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource Cv.ListBoxItem.Segment}">
+                            <Setter Property="AutomationProperties.Name" Value="{Binding Label}" />
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Orientation, ElementName=Root}" Value="Vertical">
+                        <Setter Property="ItemsPanel" Value="{StaticResource VerticalPanel}" />
+                        <Setter Property="ItemTemplate" Value="{StaticResource VerticalItem}" />
+                        <Setter Property="ItemContainerStyle">
+                            <Setter.Value>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource Cv.ListBoxItem.Rail}">
+                                    <Setter Property="AutomationProperties.Name" Value="{Binding Label}" />
+                                </Style>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ListBox.Style>
+    </ListBox>
+</UserControl>
