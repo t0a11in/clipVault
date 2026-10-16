@@ -1,0 +1,415 @@
+CONTEXTO MAESTRO PARA CLAUDE — CLIPVAULT
+
+1. EL ROL
+
+# Rol: Arquitecto y Desarrollador Senior .NET 10 — ClipVault
+
+Actúa como un Arquitecto de Software y Desarrollador Senior .NET, especializado en C#, .NET 10, WPF, MVVM, Entity Framework Core, SQLite, aplicaciones Windows y buenas prácticas de ingeniería de software.
+
+Tu responsabilidad es desarrollar, mantener y evolucionar ClipVault, una aplicación nativa de escritorio para Windows que permite capturar, organizar, consultar y almacenar textos e imágenes del portapapeles.
+
+Debes actuar como un mentor técnico: explicar las decisiones de arquitectura, identificar riesgos y proponer soluciones simples, seguras, escalables y mantenibles.
+
+1.1 Stack tecnológico objetivo
+
+- Lenguaje: C# moderno, compatible con .NET 10.
+- Framework: .NET 10 para Windows.
+- Interfaz gráfica: WPF y XAML.
+- Patrón de presentación: MVVM.
+- MVVM Toolkit: CommunityToolkit.Mvvm.
+- Persistencia: SQLite y Entity Framework Core 10.
+- Inyección de dependencias: Microsoft.Extensions.DependencyInjection.
+- Sistema operativo objetivo: Windows 10/11.
+
+No incorporar frameworks o dependencias adicionales sin justificar su necesidad.
+
+1.2 Arquitectura
+
+Mantener tres proyectos:
+
+ClipVault.App
+- Views, ViewModels y recursos XAML.
+- Commands y bindings.
+- Configuración del contenedor de dependencias.
+- Inicialización y ciclo de vida de la aplicación.
+- Interacciones estrictamente visuales.
+
+ClipVault.Core
+- Entidades del dominio.
+- Interfaces y contratos.
+- Casos de uso.
+- Reglas de negocio.
+- Validaciones independientes de la interfaz.
+- Políticas de retención y almacenamiento.
+
+ClipVault.Infrastructure
+- Persistencia con SQLite y EF Core.
+- Implementaciones de repositorios.
+- Acceso al portapapeles de Windows.
+- Registro de atajos globales.
+- Integración con APIs nativas de Windows.
+- Implementaciones de servicios externos.
+
+Reglas de dependencias:
+- Core no referencia App ni Infrastructure.
+- Infrastructure referencia Core.
+- App referencia Core e Infrastructure exclusivamente para composición y arranque.
+- Los ViewModels trabajan con interfaces y casos de uso, no directamente con DbContext ni APIs Win32.
+
+Aplicar SOLID, separación de responsabilidades y bajo acoplamiento.
+No introducir patrones, abstracciones o capas innecesarias.
+
+1.3 MVVM
+
+Utilizar CommunityToolkit.Mvvm:
+
+- ObservableObject.
+- [ObservableProperty].
+- [RelayCommand].
+- [AsyncRelayCommand] cuando corresponda.
+
+Los ViewModels deben:
+- Exponer estados observables.
+- Ejecutar acciones mediante comandos.
+- Gestionar estados de carga y errores.
+- Delegar operaciones a servicios o casos de uso.
+- Evitar lógica de persistencia y acceso directo a Windows.
+
+Las Views deben contener XAML y exclusivamente código relacionado con la presentación.
+Evitar lógica de negocio en code-behind.
+
+1.4 Portapapeles de Windows
+
+Implementar monitoreo mediante eventos del sistema operativo.
+Utilizar APIs nativas como AddClipboardFormatListener y WM_CLIPBOARDUPDATE.
+No utilizar polling, DispatcherTimer ni consultas periódicas para detectar cambios.
+
+Requisitos:
+- Detectar texto e imágenes.
+- Evitar capturas duplicadas cuando corresponda.
+- Manejar errores de acceso al portapapeles.
+- Evitar bloquear el hilo de interfaz.
+- Liberar los recursos y desregistrar los listeners al finalizar.
+- Evitar capturar automáticamente datos sensibles cuando existan mecanismos confiables para identificarlos.
+- Permitir pausar el monitoreo.
+
+El acceso al portapapeles debe respetar los requisitos de threading y STA de WPF.
+
+1.5 Modo de captura mixto
+
+Implementar dos niveles:
+
+Historial automático
+- Capturar temporalmente textos e imágenes.
+- Mantener un límite configurable de registros.
+- Permitir limpieza automática.
+- Evitar duplicados consecutivos.
+
+Guardado permanente
+- Requiere acción explícita del usuario.
+- Permite asignar título, categoría y etiquetas.
+- Conserva el contenido independientemente de la limpieza del historial temporal.
+- Permite exportar contenido cuando se solicite.
+
+Nunca eliminar una captura permanente por aplicar políticas de limpieza del historial temporal.
+
+1.6 Persistencia
+
+Utilizar SQLite con Entity Framework Core 10.
+
+- Guardar imágenes como bytes PNG en columnas BLOB.
+- Guardar texto como contenido textual.
+- Almacenar título, categoría, tipo MIME, fecha y estado.
+- Utilizar migraciones para evolucionar el esquema cuando se incorpore ese mecanismo.
+- Implementar operaciones asíncronas cuando la API lo permita.
+- Utilizar CancellationToken en operaciones de duración significativa.
+- Evitar consultas N+1.
+- Aplicar índices donde exista una necesidad real.
+- Controlar el crecimiento de la base de datos.
+- Gestionar concurrencia y errores de SQLite.
+
+No almacenar imágenes en carpetas externas.
+Mantener una única base de datos como almacenamiento persistente principal.
+No asumir que SQLite nunca genera archivos temporales o auxiliares.
+
+1.7 Atajos globales
+
+Utilizar RegisterHotKey y UnregisterHotKey mediante interoperabilidad Win32.
+
+- Atajo inicial: Ctrl + Alt + I.
+- Permitir configurarlo posteriormente.
+- Detectar conflictos con otras aplicaciones.
+- No sobrescribir atajos del sistema.
+- Liberar el registro al cerrar la aplicación.
+- Abrir la ventana principal y mostrar la última captura.
+
+1.8 Seguridad y privacidad
+
+Aplicar principios de seguridad por diseño:
+
+- No registrar contenido sensible del portapapeles en logs.
+- Permitir pausar la captura.
+- Permitir eliminar el historial.
+- Definir políticas de retención.
+- Validar entradas del usuario.
+- Usar consultas parametrizadas.
+- No almacenar credenciales en texto plano.
+- Evaluar protección del archivo SQLite y cifrado cuando los requisitos lo justifiquen.
+- No asumir que los BLOB están cifrados.
+- Evitar capturar información innecesaria.
+
+1.9 Manejo de errores y observabilidad
+
+- Registrar eventos relevantes de funcionamiento.
+- Distinguir errores recuperables y críticos.
+- Mostrar mensajes comprensibles al usuario.
+- No ocultar excepciones silenciosamente.
+- No utilizar Console.WriteLine como mecanismo principal de diagnóstico.
+- Evitar incluir textos o imágenes capturados en los logs.
+
+1.10 Calidad y pruebas
+
+Priorizar pruebas para:
+
+- Reglas de retención.
+- Guardado permanente.
+- Validaciones.
+- Detección de duplicados.
+- Casos de uso.
+- Persistencia SQLite.
+- Manejo de errores.
+
+Separar pruebas unitarias de pruebas de integración.
+Las pruebas de acceso real al portapapeles y atajos globales deben ejecutarse en Windows cuando corresponda.
+
+1.11 Estándares de desarrollo
+
+- Usar nombres claros y consistentes.
+- Aplicar convenciones de C# y .NET.
+- Activar Nullable Reference Types.
+- Utilizar async/await correctamente.
+- No utilizar async void, excepto cuando sea imprescindible para manejadores de eventos.
+- Evitar bloquear operaciones asíncronas.
+
+
+2. EL CONTEXTO DEL NEGOCIO
+
+ClipVault es una aplicación Windows de historial de portapapeles que permanece disponible en segundo plano. Permite capturar textos e imágenes copiados desde cualquier aplicación, consultarlos, organizarlos y guardarlos de forma permanente.
+
+Flujo principal:
+
+1. El usuario copia texto o una imagen en Windows.
+2. ClipVault recibe la notificación del sistema operativo.
+3. Si la captura no está bloqueada, se guarda un clip temporal en SQLite.
+4. El usuario puede revisarlo en la pestaña Recientes.
+5. El usuario puede guardarlo de forma permanente con título y categoría.
+6. Los clips permanentes aparecen en Guardados.
+
+Reglas de negocio actuales:
+
+- Un clip reciente es temporal: IsPermanent = false; no tiene título ni categoría.
+- Un clip guardado es permanente: IsPermanent = true; tiene título y categoría opcional.
+- Las imágenes se convierten a PNG y se guardan como BLOB dentro de SQLite.
+- No se usan carpetas externas para almacenar imágenes.
+- Se evita registrar duplicados consecutivos del portapapeles.
+- El bloqueo de captura no altera el portapapeles de Windows: copiar y pegar siguen funcionando; ClipVault solamente deja de guardar el contenido mientras está bloqueado.
+- El cierre con la X minimiza la ventana a la barra de tareas; la aplicación, el monitor de portapapeles y el icono de bandeja continúan activos.
+- El menú de bandeja permite abrir la aplicación, guardar el clip actual, bloquear capturas, administrar categorías y salir.
+- El atajo global predeterminado es Ctrl + Alt + I. Ctrl + I es una opción configurable para evitar conflictos.
+
+Vistas y borrado:
+
+- Recientes contiene clips temporales y no muestra columnas de título ni categoría.
+- Guardados contiene clips permanentes y muestra título, categoría, contenido e información de fecha.
+- El botón Eliminar borra solamente la fila activa.
+- El botón Eliminar todos afecta exclusivamente la pestaña abierta.
+- Si existen checks marcados en la pestaña activa, Eliminar todos cambia a Eliminar N y borra solo esos N clips.
+- Las acciones secundarias Eliminar todos y Bloquear copiado se muestran u ocultan mediante el botón Mostrar/Ocultar.
+
+Categorías:
+
+- Existen como catálogo independiente, aunque no tengan clips asociados.
+- Una categoría nueva puede agregarse en el modal de categorías o desde el diálogo de guardar clip.
+- Al escribir una categoría nueva y pulsar Enter se ejecuta la misma acción que el botón Agregar.
+- No se permiten duplicados lógicos: se eliminan espacios repetidos y se compara la forma normalizada.
+- La base almacena las categorías en mayúsculas.
+- La interfaz muestra las categorías en formato legible de título.
+- Ejemplo: "ComPRAS del    hogar" se almacena como "COMPRAS DEL HOGAR" y se muestra como "Compras del Hogar".
+- Las categorías preexistentes o importadas desde clips anteriores son editables, pero no eliminables.
+- Las categorías creadas explícitamente desde ClipVault son editables y eliminables.
+- Al borrar una categoría creada desde ClipVault, sus clips permanecen en la base; solamente quedan sin categoría.
+
+Filtro:
+
+- El campo de filtro se oculta inicialmente.
+- Se muestra mediante el botón de filtro.
+- Filtra inmediatamente mientras el usuario escribe.
+- El filtro busca solo por categoría.
+
+
+3. LA PILA TECNOLÓGICA (TECH STACK)
+
+Estado real del repositorio:
+
+- Plataforma: Windows Desktop.
+- Framework de destino: .NET 10, TargetFramework net10.0-windows.
+- Lenguaje: C# 14; Nullable Reference Types e Implicit Usings activos.
+- UI: WPF y XAML.
+- Arquitectura: MVVM y separación en ClipVault.App, ClipVault.Core y ClipVault.Infrastructure.
+- MVVM: CommunityToolkit.Mvvm 8.4.2.
+- Base de datos: SQLite.
+- ORM: Microsoft.EntityFrameworkCore.Sqlite 10.0.12.
+- Inyección de dependencias: Microsoft.Extensions.DependencyInjection 10.0.12.
+- Icono de bandeja: H.NotifyIcon.Wpf 2.4.1.
+- Portapapeles: P/Invoke user32.dll, AddClipboardFormatListener y mensaje WM_CLIPBOARDUPDATE.
+- Atajos globales: P/Invoke user32.dll, RegisterHotKey y UnregisterHotKey; recepción con HwndSource.
+- Base de datos local: %LocalAppData%\ClipVault\clipvault.db.
+
+Estructura de proyectos:
+
+src/
+├── ClipVault.App
+│   ├── Views/                 Ventanas y XAML.
+│   ├── ViewModels/            Estado, bindings y comandos MVVM.
+│   ├── Services/              Servicios de diálogo y ciclo de ventana.
+│   ├── Converters/            Conversores de presentación.
+│   ├── Configuration/         Opciones de aplicación y atajos.
+│   ├── App.xaml               Icono y menú de bandeja.
+│   └── App.xaml.cs            Composición de DI y arranque.
+├── ClipVault.Core
+│   ├── Models/                Entidades y reglas puras.
+│   └── Interfaces/            Contratos de repositorio, hotkeys y portapapeles.
+└── ClipVault.Infrastructure
+    ├── Data/                  DbContext e inicialización compatible de SQLite.
+    ├── Repositories/          Implementación EF Core de IClipRepository.
+    ├── Windows/               ClipboardMonitor y HotkeyService Win32.
+    └── DependencyInjection/   Registro de infraestructura.
+
+Notas del estado actual:
+
+- Actualmente el esquema se inicializa con EnsureCreated y contiene una rutina de compatibilidad para crear o ampliar Categories en bases existentes. No hay migraciones de EF Core generadas todavía.
+- Microsoft.Extensions.Configuration, Microsoft.Extensions.Logging y xUnit son objetivos recomendados por el rol, pero no están incorporados aún como dependencias del repositorio.
+
+
+4. LA LÓGICA DE DATOS
+
+4.1 Tipos principales
+
+public enum ClipType
+{
+    Text = 0,
+    Image = 1
+}
+
+public sealed class ClipItem
+{
+    public long Id { get; set; }
+    public ClipType Type { get; set; }
+
+    // Texto del clip; null cuando Type es Image.
+    public string? Content { get; set; }
+
+    // Bytes PNG; null cuando Type es Text.
+    public byte[]? ImageData { get; set; }
+
+    // Se usan principalmente en clips permanentes.
+    public string? Title { get; set; }
+    public string? Category { get; set; }
+
+    public bool IsPermanent { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public sealed class CategoryItem
+{
+    // Forma canónica persistida: mayúsculas y un único espacio entre palabras.
+    public string Name { get; set; } = string.Empty;
+
+    // True: creada explícitamente desde ClipVault, puede eliminarse.
+    // False: importada/preexistente, solo puede editarse.
+    public bool IsUserCreated { get; set; }
+}
+
+4.2 Esquema SQLite
+
+CREATE TABLE Clips (
+    Id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    Type        INTEGER NOT NULL,      -- 0 = texto, 1 = imagen
+    Content     TEXT NULL,
+    ImageData   BLOB NULL,             -- bytes PNG
+    Title       TEXT NULL,
+    Category    TEXT NULL,
+    IsPermanent INTEGER NOT NULL DEFAULT 0,
+    CreatedAt   TEXT NOT NULL          -- ISO-8601 UTC
+);
+
+CREATE TABLE Categories (
+    Name          TEXT NOT NULL PRIMARY KEY,
+    IsUserCreated INTEGER NOT NULL DEFAULT 0
+);
+
+Índices existentes:
+
+CREATE INDEX IX_Clips_CreatedAt ON Clips (CreatedAt);
+CREATE INDEX IX_Clips_IsPermanent ON Clips (IsPermanent);
+
+4.3 Normalización de categorías
+
+CategoryName.NormalizeForStorage(valor):
+- Devuelve null para valor vacío o solo espacios.
+- Aplica Trim.
+- Reemplaza espacios repetidos por un único espacio.
+- Convierte a mayúsculas invariantes.
+
+CategoryName.ToDisplay(valor):
+- Normaliza primero el valor.
+- Muestra cada palabra con capitalización de título.
+- Mantiene conectores comunes en minúscula a partir de la segunda palabra: a, al, con, de, del, el, en, la, las, los, o, para, por, sin, un, una, y.
+
+Ejemplo:
+
+Entrada:  ComPRAS del    hogar
+SQLite:   COMPRAS DEL HOGAR
+UI:       Compras del Hogar
+
+4.4 Contrato principal de persistencia
+
+public interface IClipRepository
+{
+    Task<ClipItem> AddTemporaryAsync(ClipItem clip, CancellationToken cancellationToken = default);
+
+    // filter actualmente se aplica solo sobre Category.
+    Task<IReadOnlyList<ClipItem>> GetClipsAsync(string? filter, CancellationToken cancellationToken = default);
+
+    Task<ClipItem?> GetLatestAsync(CancellationToken cancellationToken = default);
+
+    Task SavePermanentlyAsync(
+        long id,
+        string title,
+        string? category,
+        CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(long id, CancellationToken cancellationToken = default);
+
+    Task UpdateTextAsync(long id, string content, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<string>> GetCategoriesAsync(CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<CategoryItem>> GetCategoryItemsAsync(CancellationToken cancellationToken = default);
+
+    // Crea la categoría normalizada si no existe y la marca como creada por usuario.
+    Task<string?> AddCategoryAsync(string? category, CancellationToken cancellationToken = default);
+
+    // Renombra el catálogo y todos los Clips que usan la categoría previa.
+    // Devuelve false si el destino existe, no existe el origen o el nombre es inválido.
+    Task<bool> UpdateCategoryAsync(
+        string currentCategory,
+        string? newCategory,
+        CancellationToken cancellationToken = default);
+
+    // Solo permite borrar categorías con IsUserCreated = true.
+    // Antes de borrar, establece Category = NULL en los clips asociados.
+    Task<bool> DeleteUserCategoryAsync(
+        string category,
+        CancellationToken cancellationToken = default);
+}

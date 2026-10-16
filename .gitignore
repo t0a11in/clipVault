@@ -1,0 +1,11 @@
+[Bb]in/
+[Oo]bj/
+.vs/
+.verify/
+*.user
+*.db
+*.db-shm
+*.db-wal
+bin/
+obj/
+appsettings.Local.json

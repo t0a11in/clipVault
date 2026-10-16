@@ -1,0 +1,319 @@
+<Window x:Class="ClipVault.App.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:ClipVault.App.Converters"
+        Title="ClipVault"
+        Width="980"
+        Height="640"
+        MinWidth="700"
+        MinHeight="460"
+        PreviewKeyDown="OnWindowPreviewKeyDown"
+        Closing="OnClosing">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:PngBytesToImageSourceConverter x:Key="PngBytesToImageSourceConverter" />
+
+        <Style TargetType="Button">
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.45" />
+                    <Setter Property="Cursor" Value="No" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Colores semánticos: verde guarda, rojo elimina, ámbar controla captura. -->
+        <Style x:Key="SaveActionButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#15803D" />
+            <Setter Property="BorderBrush" Value="#166534" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style x:Key="DeleteActionButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#DC2626" />
+            <Setter Property="BorderBrush" Value="#B91C1C" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style x:Key="DeleteAllActionButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#991B1B" />
+            <Setter Property="BorderBrush" Value="#7F1D1D" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style x:Key="ExtraActionButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#475569" />
+            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style x:Key="CaptureLockButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#D97706" />
+            <Setter Property="BorderBrush" Value="#B45309" />
+            <Setter Property="Foreground" Value="White" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCaptureBlocked}" Value="True">
+                    <Setter Property="Background" Value="#2563EB" />
+                    <Setter Property="BorderBrush" Value="#1D4ED8" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <DockPanel Margin="16">
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0"
+                         Width="260"
+                         Margin="0,0,8,0"
+                         VerticalContentAlignment="Center"
+                         Visibility="{Binding IsFilterOpen, Converter={StaticResource BooleanToVisibilityConverter}}"
+                         Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
+                         ToolTip="Filtrar solo por categoría" />
+
+                <Button Grid.Column="1"
+                        Margin="0,0,8,0"
+                        MinWidth="34"
+                        Padding="7,4"
+                        Command="{Binding ToggleFilterCommand}"
+                        Content="🔎"
+                        ToolTip="Mostrar u ocultar filtro por categoría" />
+
+                <Button Grid.Column="2"
+                        Margin="0,0,8,0"
+                        MinWidth="34"
+                        Padding="7,4"
+                        Command="{Binding RefreshCommand}"
+                        Content="↻"
+                        ToolTip="Actualizar historial" />
+
+                <Button Grid.Column="3"
+                        MinWidth="34"
+                        Padding="7,4"
+                        Command="{Binding OpenCategoriesCommand}"
+                        Content="🏷"
+                        ToolTip="Administrar categorías" />
+            </Grid>
+
+            <StatusBar DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                <TextBlock Text="{Binding Status}" />
+            </StatusBar>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TabControl Grid.Row="0"
+                            SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
+                    <TabItem Header="Recientes (sin categoría)">
+                        <DataGrid ItemsSource="{Binding RecentClips}"
+                                  SelectedItem="{Binding SelectedClip, Mode=TwoWay}"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  CanUserResizeRows="False"
+                                  CanUserSortColumns="True"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow"
+                                  GridLinesVisibility="Horizontal"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  MouseDoubleClick="OnClipTableDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="42" MinWidth="42">
+                                    <DataGridTemplateColumn.Header>
+                                        <CheckBox IsThreeState="True"
+                                                  IsEnabled="{Binding DataContext.HasRecentClips, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                  IsChecked="{Binding DataContext.AreRecentClipsMarked, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Mode=TwoWay}"
+                                                  ToolTip="Seleccionar todos los clips recientes" />
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox HorizontalAlignment="Center"
+                                                      IsChecked="{Binding IsMarkedForDeletion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      ToolTip="Seleccionar para eliminar" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Tipo" Binding="{Binding Type}" Width="Auto" MinWidth="65" />
+                                <!-- Al no haber título ni categoría en Recientes, el contenido ocupa todo el ancho disponible. -->
+                                <DataGridTemplateColumn Header="Texto / imagen" Width="*" MinWidth="260">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DisplayText}"
+                                                       TextWrapping="Wrap"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       MaxHeight="58" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Fecha" Binding="{Binding CreatedAt, StringFormat={}{0:dd/MM/yyyy HH:mm:ss}}" Width="165" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+
+                    <TabItem Header="Guardados">
+                        <DataGrid ItemsSource="{Binding SavedClips}"
+                                  SelectedItem="{Binding SelectedClip, Mode=TwoWay}"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  CanUserResizeRows="False"
+                                  CanUserSortColumns="True"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow"
+                                  GridLinesVisibility="Horizontal"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  MouseDoubleClick="OnClipTableDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="42" MinWidth="42">
+                                    <DataGridTemplateColumn.Header>
+                                        <CheckBox IsThreeState="True"
+                                                  IsEnabled="{Binding DataContext.HasSavedClips, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                  IsChecked="{Binding DataContext.AreSavedClipsMarked, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Mode=TwoWay}"
+                                                  ToolTip="Seleccionar todos los clips guardados" />
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox HorizontalAlignment="Center"
+                                                      IsChecked="{Binding IsMarkedForDeletion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      ToolTip="Seleccionar para eliminar" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Tipo" Binding="{Binding Type}" Width="Auto" MinWidth="65" />
+                                <DataGridTextColumn Header="Título" Binding="{Binding Title}" Width="1.2*" MinWidth="130" />
+                                <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="1*" MinWidth="110" />
+                                <DataGridTemplateColumn Header="Texto / imagen" Width="3*" MinWidth="260">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DisplayText}"
+                                                       TextWrapping="Wrap"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       MaxHeight="58" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Fecha" Binding="{Binding CreatedAt, StringFormat={}{0:dd/MM/yyyy HH:mm:ss}}" Width="165" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
+
+                <StackPanel Grid.Row="1"
+                            Margin="0,12,0,0"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal">
+                    <Button Margin="0,0,8,0"
+                            Style="{StaticResource SaveActionButton}"
+                            Padding="12,6"
+                            Command="{Binding SavePermanentCommand}"
+                            Content="💾 Guardar"
+                            ToolTip="Guardar permanentemente la fila seleccionada" />
+                    <Button Margin="0,0,8,0"
+                            Style="{StaticResource DeleteActionButton}"
+                            Padding="12,6"
+                            Command="{Binding DeleteSelectedCommand}"
+                            Content="🗑 Eliminar"
+                            ToolTip="Eliminar solo la fila seleccionada" />
+                    <Button Margin="0,0,8,0"
+                            Style="{StaticResource ExtraActionButton}"
+                            Padding="12,6"
+                            Command="{Binding ToggleExtraActionsCommand}"
+                            Content="{Binding ExtraActionsToggleText}"
+                            ToolTip="{Binding ExtraActionsToggleToolTip}" />
+                    <Button Margin="0,0,8,0"
+                            Style="{StaticResource DeleteAllActionButton}"
+                            Padding="12,6"
+                            Visibility="{Binding IsExtraActionsExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Command="{Binding DeleteAllOrMarkedCommand}"
+                            Content="{Binding BulkDeleteButtonText}"
+                            ToolTip="{Binding BulkDeleteToolTip}" />
+                    <Button Margin="0,0,8,0"
+                            Style="{StaticResource CaptureLockButton}"
+                            Padding="12,6"
+                            Visibility="{Binding IsExtraActionsExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Command="{Binding ToggleCaptureLockCommand}"
+                            Content="{Binding CaptureLockButtonText}"
+                            ToolTip="{Binding CaptureLockToolTip}" />
+                </StackPanel>
+            </Grid>
+        </DockPanel>
+
+        <!-- Superposición modal: el fondo captura el clic exterior y el panel central permanece editable. -->
+        <Grid Panel.ZIndex="10"
+              Background="#66000000"
+              Visibility="{Binding IsPreviewOpen, Converter={StaticResource BooleanToVisibilityConverter}}"
+              MouseDown="OnPreviewOverlayMouseDown">
+            <Border Width="680"
+                    MaxWidth="900"
+                    MaxHeight="520"
+                    Padding="20"
+                    Background="White"
+                    CornerRadius="8"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Text="{Binding PreviewedClip.Title, TargetNullValue=Detalle del clip}" />
+                    <TextBlock Grid.Row="1"
+                               Margin="0,4,0,12"
+                               Foreground="DimGray"
+                               Text="{Binding PreviewedClip.Category}" />
+
+                    <TextBox Grid.Row="2"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             Visibility="{Binding IsTextPreview, Converter={StaticResource BooleanToVisibilityConverter}}"
+                             Text="{Binding EditablePreviewText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <ScrollViewer Grid.Row="2"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  Visibility="{Binding IsImagePreview, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Image Source="{Binding PreviewImageData, Converter={StaticResource PngBytesToImageSourceConverter}}"
+                               Stretch="Uniform" />
+                    </ScrollViewer>
+
+                    <StackPanel Grid.Row="3"
+                                Margin="0,16,0,0"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                        <Button Margin="0,0,8,0"
+                                MinWidth="34"
+                                Padding="7,4"
+                                Visibility="{Binding IsTextPreview, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Command="{Binding SavePreviewTextCommand}"
+                                Content="💾"
+                                ToolTip="Guardar texto" />
+                        <Button MinWidth="34"
+                                Padding="7,4"
+                                Command="{Binding ClosePreviewCommand}"
+                                Content="×"
+                                ToolTip="Cerrar" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

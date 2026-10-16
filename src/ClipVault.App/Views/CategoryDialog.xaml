@@ -1,0 +1,93 @@
+<Window x:Class="ClipVault.App.Views.CategoryDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Categorías"
+        Width="420"
+        Height="470"
+        MinHeight="280"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Margin="0,0,0,8"
+                   Text="Categorías disponibles" />
+
+        <ListBox Grid.Row="1"
+                 ItemsSource="{Binding Categories}"
+                 SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+                 DisplayMemberPath="DisplayName"
+                 ToolTip="Selecciona una categoría para editarla o, si fue creada aquí, eliminarla" />
+
+        <Grid Grid.Row="2" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0"
+                     VerticalContentAlignment="Center"
+                     Text="{Binding NewCategory, UpdateSourceTrigger=PropertyChanged}"
+                     KeyDown="OnNewCategoryKeyDown"
+                     ToolTip="Nueva categoría" />
+            <Button Grid.Column="1"
+                    Margin="8,0,0,0"
+                    MinWidth="34"
+                    Padding="7,4"
+                    Command="{Binding AddCategoryCommand}"
+                    Content="＋"
+                    ToolTip="Agregar categoría" />
+        </Grid>
+
+        <Grid Grid.Row="3" Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0"
+                     VerticalContentAlignment="Center"
+                     Text="{Binding EditedCategory, UpdateSourceTrigger=PropertyChanged}"
+                     ToolTip="Editar la categoría seleccionada" />
+            <Button Grid.Column="1"
+                    Margin="8,0,0,0"
+                    MinWidth="34"
+                    Padding="7,4"
+                    Command="{Binding UpdateCategoryCommand}"
+                    Content="✎"
+                    ToolTip="Guardar cambios de la categoría seleccionada" />
+            <Button Grid.Column="2"
+                    Margin="4,0,0,0"
+                    MinWidth="34"
+                    Padding="7,4"
+                    Command="{Binding DeleteCategoryCommand}"
+                    Content="🗑"
+                    ToolTip="Borrar solo una categoría creada desde ClipVault" />
+        </Grid>
+
+        <Grid Grid.Row="4" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Foreground="DimGray"
+                       Text="{Binding Status}" />
+            <Button Grid.Column="1"
+                    MinWidth="34"
+                    Padding="7,4"
+                    Command="{Binding CloseCommand}"
+                    Content="×"
+                    ToolTip="Cerrar" />
+        </Grid>
+    </Grid>
+</Window>
