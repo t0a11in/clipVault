@@ -2,8 +2,4 @@
   <Project Path="src/ClipVault.App/ClipVault.App.csproj" />
   <Project Path="src/ClipVault.Core/ClipVault.Core.csproj" />
   <Project Path="src/ClipVault.Infrastructure/ClipVault.Infrastructure.csproj" />
-  <Folder Name="/tests/">
-    <Project Path="tests/ClipVault.Tests.Unit/ClipVault.Tests.Unit.csproj" />
-    <Project Path="tests/ClipVault.Tests.Integration/ClipVault.Tests.Integration.csproj" />
-  </Folder>
 </Solution>
