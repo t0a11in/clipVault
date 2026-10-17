@@ -20,7 +20,8 @@ public partial class ShellViewModel : ObservableObject
             new AreaOption(AppArea.History, "Historial", "", "Historial del portapapeles"),
             new AreaOption(AppArea.Library, "Biblioteca", "", "Biblioteca de mensajes y comandos")
         ];
-        selectedArea = Areas[0];
+        // La app abre en la Biblioteca; el Historial queda a un clic en el riel.
+        selectedArea = Areas[1];
     }
 
     public IReadOnlyList<AreaOption> Areas { get; }
@@ -32,7 +33,7 @@ public partial class ShellViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsLibraryActive))]
     private AreaOption? selectedArea;
 
-    // Si el selector llegara a enviar null, se trata como Historial (área por defecto).
+    // Si el selector llegara a enviar null, se muestra el Historial (nunca queda la ventana vacía).
     public bool IsHistoryActive => SelectedArea?.Area != AppArea.Library;
 
     public bool IsLibraryActive => SelectedArea?.Area == AppArea.Library;

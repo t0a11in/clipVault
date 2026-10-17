@@ -175,37 +175,14 @@
                                   MinWidth="{DynamicResource Cv.MinWidth.Content}" />
             </Grid.ColumnDefinitions>
 
-            <!-- B. Navegación lateral: filtros + secciones + acciones al pie -->
+            <!-- B. Navegación lateral: filtros + secciones (pie limpio) -->
             <!-- Navegación y páginas se bloquean mientras se edita una página (etapa 8). -->
             <DockPanel Grid.Column="0"
                        Background="{DynamicResource Cv.Brush.SurfaceSubtle}"
                        IsEnabled="{Binding IsNavigationLocked, Converter={StaticResource Not}}"
                        ToolTipService.ShowOnDisabled="True">
-                <StackPanel DockPanel.Dock="Bottom" Margin="6,6,6,8">
-                    <Border Height="1" Margin="0,0,0,6" Background="{DynamicResource Cv.Brush.Border}" />
-                    <Button Style="{StaticResource Cv.Button.Ghost}"
-                            Command="{Binding NewSectionCommand}"
-                            ToolTip="Nueva sección (Ctrl+Shift+N)"
-                            AutomationProperties.Name="Nueva sección">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource Cv.Text.Icon}" Margin="0,0,10,0" Text="&#xE710;" />
-                            <TextBlock VerticalAlignment="Center" Text="Nueva sección" />
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource Cv.Button.Ghost}"
-                            Command="{Binding OpenSettingsCommand}"
-                            ToolTip="Configuración de copiado y pegado"
-                            AutomationProperties.Name="Configuración">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource Cv.Text.Icon}" Margin="0,0,10,0" Text="&#xE713;" />
-                            <TextBlock VerticalAlignment="Center" Text="Configuración" />
-                        </StackPanel>
-                    </Button>
-                    <!-- La maqueta debe señalar lo simulado (criterio del JSON). -->
-                    <TextBlock Margin="10,6,10,0"
-                               Style="{StaticResource Cv.Text.Small}"
-                               Text="Datos de ejemplo: los cambios no se guardan." />
-                </StackPanel>
+                <!-- Pie limpio: "Nueva sección" y "Configuración" están en la barra superior
+                     (y Ctrl+Shift+N). -->
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled"
@@ -232,16 +209,8 @@
             <DockPanel Grid.Column="2"
                        Background="{DynamicResource Cv.Brush.Surface}"
                        IsEnabled="{Binding IsNavigationLocked, Converter={StaticResource Not}}">
-                <components:PanelHeader DockPanel.Dock="Top" Title="Páginas">
-                    <components:PanelHeader.Actions>
-                        <Button Style="{StaticResource Cv.Button.Icon}"
-                                Width="28" Height="28" MinWidth="28"
-                                Content="&#xE710;"
-                                Command="{Binding NewPageCommand}"
-                                ToolTip="Nueva página (Ctrl+N)"
-                                AutomationProperties.Name="Nueva página" />
-                    </components:PanelHeader.Actions>
-                </components:PanelHeader>
+                <!-- Solo título y búsqueda; "Nueva página" está en la barra superior (y Ctrl+N). -->
+                <components:PanelHeader DockPanel.Dock="Top" Title="Páginas" />
                 <components:SearchBox x:Name="PageSearch"
                                       DockPanel.Dock="Top"
                                       Margin="8,0,8,8"
@@ -267,8 +236,6 @@
                                            Glyph="&#xE8A5;"
                                            Title="{Binding EmptyTitle}"
                                            Description="{Binding EmptyDescription}"
-                                           ActionText="Crear página"
-                                           ActionCommand="{Binding NewPageCommand}"
                                            Visibility="{Binding IsContextEmpty, Converter={StaticResource BoolToVisibility}}" />
 
                     <components:EmptyState Margin="12,24,12,24"
@@ -276,8 +243,6 @@
                                            Glyph="&#xE721;"
                                            Title="No encontramos resultados"
                                            Description="Prueba con otra palabra o revisa la sección activa."
-                                           ActionText="Limpiar búsqueda"
-                                           ActionCommand="{Binding ClearSearchCommand}"
                                            Visibility="{Binding IsNoSearchResults, Converter={StaticResource BoolToVisibility}}" />
                 </Grid>
             </DockPanel>
